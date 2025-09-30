@@ -92,8 +92,11 @@ public:
     bool IsActorVisible() const { return !bHiddenInGame; }
 
     // Tick In Editor
-    void SetActorTickInEditorEnabled(bool bTickInEditor) { bTickInEditor = bTickInEditor; }
+    void SetActorTickInEditorEnabled(bool bEnabled) { bTickInEditor = bEnabled; }
     bool IsActorTickInEditorEnabled() const { return bTickInEditor; }
+
+    // Tick Enabled Check
+    bool IsActorTickEnabled() const { return bCanEverTick; }
 
     void AddComponent(UActorComponent* Component);
 

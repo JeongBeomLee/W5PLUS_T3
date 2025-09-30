@@ -445,24 +445,46 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
 void UWorld::Tick(float DeltaSeconds)
 {
-	//순서 바꾸면 안댐
+	// Level의 Actors Tick
+	/*if (Level)
+	{
+		for (AActor* Actor : Level->GetActors())
+		{
+			if (Actor && Actor->IsActorTickEnabled())
+			{
+				Actor->Tick(DeltaSeconds);
+			}
+		}
+	}*/
+
+	// 기존 Actors 배열 Tick (호환성 유지)
 	for (AActor* Actor : Actors)
 	{
-		if (Actor) Actor->Tick(DeltaSeconds);
+		if (Actor && Actor->IsActorTickEnabled())
+		{
+			Actor->Tick(DeltaSeconds);
+		}
 	}
+
+	// Engine Actors Tick
 	for (AActor* EngineActor : EngineActors)
 	{
-		if (EngineActor) EngineActor->Tick(DeltaSeconds);
+		if (EngineActor && EngineActor->IsActorTickEnabled())
+		{
+			EngineActor->Tick(DeltaSeconds);
+		}
 	}
-	GizmoActor->Tick(DeltaSeconds);
+
+	if (GizmoActor)
+	{
+		GizmoActor->Tick(DeltaSeconds);
+	}
 
 	//ProcessActorSelection();
 	ProcessViewportInput();
 	//Input Manager가 카메라 후에 업데이트 되어야함
 
-
 	// 뷰포트 업데이트 - UIManager의 뷰포트 전환 상태에 따라
-
 	if (MultiViewport)
 	{
 		MultiViewport->OnUpdate(DeltaSeconds);
