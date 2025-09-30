@@ -44,8 +44,10 @@
 #include"RenderViewportSwitcherWidget.h"
 #include "MenuBarWidget.h"
 #include"Octree.h"
+#include "Level.h"
 // ... (rest of the file)
 IMPLEMENT_CLASS(UWorld)
+IMPLEMENT_CLASS(ULevel)
 
 
 IMPLEMENT_CLASS(UPrimitiveComponent)

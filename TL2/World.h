@@ -4,6 +4,7 @@
 #include "GridActor.h"
 #include "GizmoActor.h"
 #include "Enums.h"
+#include "Level.h"
 
 // Forward Declarations
 class UResourceManager;
@@ -21,7 +22,6 @@ struct FPrimitiveData;
 class SViewportWindow;
 class UOctree;
 class FBVH;
-class ULevel;
 /**
  * UWorld
  * - 월드 단위의 액터/타임/매니저 관리 클래스
@@ -72,7 +72,10 @@ public:
 
     void AddActor(AActor* Actor)
     {
-        Actors.Add(Actor);
+        if (Level)
+        {
+            Level->AddActor(Actor);
+        }
     }
 
     bool DestroyActor(AActor* Actor);
@@ -92,8 +95,6 @@ public:
     void DisableShowFlag(EEngineShowFlags Flag) { ShowFlags &= ~Flag; }
     void ToggleShowFlag(EEngineShowFlags Flag) { ShowFlags = HasShowFlag(ShowFlags, Flag) ? (ShowFlags & ~Flag) : (ShowFlags | Flag); }
     bool IsShowFlagEnabled(EEngineShowFlags Flag) const { return HasShowFlag(ShowFlags, Flag); }
-
-  
     
     /** Generate unique name for actor based on type */
     FString GenerateUniqueActorName(const FString& ActorType);
@@ -104,13 +105,13 @@ public:
 
     /** === 렌더 === */
     void Render();
-    void RenderSingleViewport();
+    //void RenderSingleViewport();
     void RenderViewports(ACameraActor* Camera, FViewport* Viewport);
     //void GameRender(ACameraActor* Camera, FViewport* Viewport);
 
 
     /** === 필요한 엑터 게터 === */
-    const TArray<AActor*>& GetActors() { return Actors; }
+    const TArray<AActor*>& GetActors() { return Level ? Level->GetActors() : Actors; }
     AGizmoActor* GetGizmoActor();
     AGridActor* GetGridActor() { return GridActor; }
 
@@ -172,6 +173,7 @@ private:
     UOctree* Octree;
     FBVH* BVH;
 };
+
 template<class T>
 inline T* UWorld::SpawnActor()
 {
@@ -192,8 +194,11 @@ inline T* UWorld::SpawnActor(const FTransform& Transform)
     //  월드 등록
     NewActor->SetWorld(this);
 
-    // 월드에 등록
-    Actors.Add(NewActor);
+    // Level에 등록
+    if (Level)
+    {
+        Level->AddActor(NewActor);
+    }
 
     return NewActor;
 }

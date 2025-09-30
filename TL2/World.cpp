@@ -17,7 +17,6 @@
 #include "Frustum.h"
 #include "Octree.h"
 #include "BVH.h"
-#include "Level.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -44,11 +43,14 @@ UWorld& UWorld::GetInstance()
 
 UWorld::~UWorld()
 {
-	for (AActor* Actor : Actors)
+	// Level의 Actors 정리
+	if (Level)
 	{
-		ObjectFactory::DeleteObject(Actor);
+		for (AActor* Actor : Level->GetActors())
+		{
+			ObjectFactory::DeleteObject(Actor);
+		}
 	}
-	Actors.clear();
 
 	// 카메라 정리
 	ObjectFactory::DeleteObject(MainCameraActor);
@@ -130,7 +132,6 @@ void UWorld::Initialize()
 	InitializeMainCamera();
 	InitializeGrid();
 	InitializeGizmo();
-
 
 	// 액터 간 참조 설정
 	SetupActorReferences();
@@ -332,16 +333,11 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 	if (!Renderer) return;
 	FVector rgb(1.0f, 1.0f, 1.0f);
 
-
 	FFrustum ViewFrustum;
 	ViewFrustum.Update(ViewMatrix * ProjectionMatrix);
 
-
-
 	Renderer->BeginLineBatch();
 	Renderer->SetViewModeType(ViewModeIndex);
-
-
 
 	// === Begin Line Batch for all actors ===
 	Renderer->BeginLineBatch();
@@ -355,7 +351,8 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 		int AllActorCount = 0;
 		int FrustumCullCount = 0;
 
-		for (AActor* Actor : Actors)
+		const TArray<AActor*>& LevelActors = Level ? Level->GetActors() : TArray<AActor*>();
+		for (AActor* Actor : LevelActors)
 		{
 			if (!Actor) continue;
 			if (Actor->GetActorHiddenInGame()) continue;
@@ -446,7 +443,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 void UWorld::Tick(float DeltaSeconds)
 {
 	// Level의 Actors Tick
-	/*if (Level)
+	if (Level)
 	{
 		for (AActor* Actor : Level->GetActors())
 		{
@@ -454,15 +451,6 @@ void UWorld::Tick(float DeltaSeconds)
 			{
 				Actor->Tick(DeltaSeconds);
 			}
-		}
-	}*/
-
-	// 기존 Actors 배열 Tick (호환성 유지)
-	for (AActor* Actor : Actors)
-	{
-		if (Actor && Actor->IsActorTickEnabled())
-		{
-			Actor->Tick(DeltaSeconds);
 		}
 	}
 
@@ -527,11 +515,10 @@ bool UWorld::DestroyActor(AActor* Actor)
 		UIManager.ResetPickedActor();
 	}
 
-	// 배열에서 제거 시도
-	auto it = std::find(Actors.begin(), Actors.end(), Actor);
-	if (it != Actors.end())
+	// Level에서 제거 시도
+	if (Level)
 	{
-		Actors.erase(it);
+		Level->RemoveActor(Actor);
 
 		// 메모리 해제
 		ObjectFactory::DeleteObject(Actor);
@@ -542,7 +529,7 @@ bool UWorld::DestroyActor(AActor* Actor)
 		return true; // 성공적으로 삭제
 	}
 
-	return false; // 월드에 없는 액터
+	return false; // Level이 없음
 }
 
 inline FString ToObjFileName(const FString& TypeName)
@@ -580,11 +567,16 @@ void UWorld::CreateNewScene()
 	SelectionManager.ClearSelection();
 	UIManager.ResetPickedActor();
 
-	for (AActor* Actor : Actors)
+	// Level의 Actors 정리
+	if (Level)
 	{
-		ObjectFactory::DeleteObject(Actor);
+		for (AActor* Actor : Level->GetActors())
+		{
+			ObjectFactory::DeleteObject(Actor);
+		}
+		Level->GetActors().clear();
 	}
-	Actors.Empty();
+
 	if (Octree)
 	{
 		Octree->Release();//새로운 씬이 생기면 Octree를 지워준다.
@@ -841,14 +833,18 @@ void UWorld::LoadScene(const FString& SceneName)
 	UObject::SetNextUUID(SafeNext);
 
 
-	InitializeSceneGraph(Actors);
+	if (Level)
+	{
+		InitializeSceneGraph(Level->GetActors());
+	}
 }
 
 void UWorld::SaveScene(const FString& SceneName)
 {
 	TArray<FPrimitiveData> Primitives;
 
-    for (AActor* Actor : Actors)
+	const TArray<AActor*>& LevelActors = Level ? Level->GetActors() : TArray<AActor*>();
+    for (AActor* Actor : LevelActors)
     {
         if (AStaticMeshActor* MeshActor = Cast<AStaticMeshActor>(Actor))
         {
