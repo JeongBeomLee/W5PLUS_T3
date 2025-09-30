@@ -755,9 +755,9 @@ void UWorld::LoadScene(const FString& SceneName)
 	// 1) 현재 월드에서 이미 사용 중인 UUID 수집(엔진 액터 + 기즈모)
 	std::unordered_set<uint32> UsedUUIDs;
 	auto AddUUID = [&](AActor* A) { if (A) UsedUUIDs.insert(A->UUID); };
-	for (AActor* Eng : EngineActors) 
+	for (AActor* EngineActor : EngineActors)
 	{
-		AddUUID(Eng);
+		AddUUID(EngineActor);
 	}
 	AddUUID(GizmoActor); // Gizmo는 EngineActors에 안 들어갈 수 있으므로 명시 추가
 

@@ -36,9 +36,9 @@ private:
 
 private:
     bool bInitialized = false;
-    bool bShowFPS = true;
-    bool bShowMemory = true;
-    bool bShowRenderStats = true;
+    bool bShowFPS = false;
+    bool bShowMemory = false;
+    bool bShowRenderStats = false;
     
     // 렌더링 통계 데이터
     uint32 CurrentDrawCalls = 0;
