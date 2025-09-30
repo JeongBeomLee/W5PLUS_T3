@@ -908,3 +908,81 @@ AGizmoActor* UWorld::GetGizmoActor()
 {
 	return GizmoActor;
 }
+
+// PIE 월드 복제 함수
+UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
+{
+	if (!EditorWorld)
+	{
+		return nullptr;
+	}
+
+	// 새로운 PIE 월드 생성
+	UWorld* PIEWorld = NewObject<UWorld>();
+	if (!PIEWorld)
+	{
+		return nullptr;
+	}
+
+	// WorldType을 PIE로 설정
+	PIEWorld->SetWorldType(EWorldType::PIE);
+
+	// Level 복제
+	if (EditorWorld->GetLevel())
+	{
+		ULevel* EditorLevel = EditorWorld->GetLevel();
+		ULevel* PIELevel = NewObject<ULevel>();
+
+		if (PIELevel)
+		{
+			// Level의 Actors를 복제 (4단계에서 AActor::Duplicate 구현 후 활성화)
+			for (AActor* EditorActor : EditorLevel->GetActors())
+			{
+				if (EditorActor)
+				{
+					// TODO: AActor::Duplicate() 구현 후 사용
+					// AActor* PIEActor = Cast<AActor>(EditorActor->Duplicate());
+					// if (PIEActor)
+					// {
+					//     PIELevel->AddActor(PIEActor);
+					//     PIEActor->SetWorld(PIEWorld);
+					// }
+				}
+			}
+
+			PIEWorld->Level = PIELevel;
+		}
+	}
+
+	return PIEWorld;
+}
+
+// PIE 시작 시 모든 액터의 BeginPlay 호출
+void UWorld::InitializeActorsForPlay()
+{
+	if (Level)
+	{
+		for (AActor* Actor : Level->GetActors())
+		{
+			if (Actor)
+			{
+				Actor->BeginPlay();
+			}
+		}
+	}
+}
+
+// PIE 종료 시 정리
+void UWorld::CleanupWorld()
+{
+	if (Level)
+	{
+		for (AActor* Actor : Level->GetActors())
+		{
+			if (Actor)
+			{
+				Actor->EndPlay(EEndPlayReason::Quit);
+			}
+		}
+	}
+}

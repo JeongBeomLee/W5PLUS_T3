@@ -124,6 +124,12 @@ public:
     EWorldType GetWorldType() const { return WorldType; }
     void SetWorldType(EWorldType InWorldType) { WorldType = InWorldType; }
 
+    /** === PIE 월드 복제 === */
+    static UWorld* DuplicateWorldForPIE(UWorld* EditorWorld);
+    void InitializeActorsForPlay();
+    void CleanupWorld();
+    bool IsPIEWorld() const { return WorldType == EWorldType::PIE; }
+
     /** === 플레이어 / 컨트롤러 === */
     // APlayerController* GetFirstPlayerController() const;
     // TArray<APlayerController*> GetPlayerControllerIterator() const;

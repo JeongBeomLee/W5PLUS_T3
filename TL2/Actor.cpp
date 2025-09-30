@@ -225,3 +225,54 @@ void AActor::AddComponent(UActorComponent* Component)
         //Component->SetupAttachment(RootComponent);
     }
 }
+
+// AActor 복제
+UObject* AActor::Duplicate()
+{
+    // 새 액터 생성 (같은 타입으로)
+    AActor* NewActor = NewObject<AActor>();
+    if (!NewActor)
+    {
+        return nullptr;
+    }
+
+    // 기본 프로퍼티 복사 (간소화된 얕은 복사)
+    NewActor->Name = this->Name;
+    NewActor->bIsPicked = false; // PIE에서는 선택 해제
+    NewActor->bCanEverTick = this->bCanEverTick;
+    NewActor->bHiddenInGame = this->bHiddenInGame;
+    NewActor->bTickInEditor = this->bTickInEditor;
+
+    // Transform 복사
+    if (this->RootComponent)
+    {
+        NewActor->SetActorTransform(this->GetActorTransform());
+    }
+
+    // 서브 오브젝트(Components) 복제
+    NewActor->DuplicateSubObjects();
+
+    return NewActor;
+}
+
+// 서브 오브젝트(Components) 복제
+void AActor::DuplicateSubObjects()
+{
+    // Components를 깊은 복사
+    TSet<UActorComponent*> OriginalComponents = Components;
+    Components.clear();
+
+    for (UActorComponent* OriginalComp : OriginalComponents)
+    {
+        if (OriginalComp)
+        {
+            // TODO: UActorComponent::Duplicate() 구현 필요
+            // UActorComponent* NewComp = Cast<UActorComponent>(OriginalComp->Duplicate());
+            // if (NewComp)
+            // {
+            //     NewComp->SetOwner(this);
+            //     AddComponent(NewComp);
+            // }
+        }
+    }
+}

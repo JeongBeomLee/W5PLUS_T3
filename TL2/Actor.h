@@ -22,6 +22,10 @@ public:
     virtual void Tick(float DeltaSeconds);
     virtual void Destroy();
 
+    // 복제 시스템
+    virtual UObject* Duplicate() override;
+    virtual void DuplicateSubObjects() override;
+
     // ───────────────
     // Transform API
     // ───────────────

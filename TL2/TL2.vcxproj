@@ -435,6 +435,7 @@
     <ClInclude Include="WindowsBinWriter.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="UI\StatsOverlayD2D.h" />
+    <ClInclude Include="WorldContext.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />

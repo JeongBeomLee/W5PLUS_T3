@@ -64,6 +64,20 @@ public:
     bool IsA(const UClass* C) const noexcept { return GetClass()->IsChildOf(C); }
     template<class T> bool IsA() const noexcept { return IsA(T::StaticClass()); }
 
+    // 복제 시스템
+    virtual UObject* Duplicate()
+    {
+        // 기본 구현: 얕은 복사 수행
+        // 하위 클래스에서 오버라이드 필요
+        return nullptr;
+    }
+
+    virtual void DuplicateSubObjects()
+    {
+        // 서브 오브젝트를 깊은 복사하는 함수
+        // 하위 클래스에서 오버라이드하여 구현
+    }
+
     // 다음으로 발급될 UUID를 조회 (증가 없음)
     static uint32 PeekNextUUID() { return GUUIDCounter; }
 
