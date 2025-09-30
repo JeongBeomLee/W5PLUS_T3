@@ -3,7 +3,7 @@
 #include "Vector.h"
 
 class UWorld;
-class USceneComponent;
+class UActorComponent;
 class UAABoundingBoxComponent;
 class UShapeComponent;
 
@@ -18,6 +18,7 @@ protected:
 
 public:
     virtual void BeginPlay();
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason);
     virtual void Tick(float DeltaSeconds);
     virtual void Destroy();
 
@@ -60,11 +61,9 @@ public:
     void SetIsPicked(bool picked) { bIsPicked = picked; }
     bool GetIsPicked() { return bIsPicked; }
 
-
-
     //-----------------------------
     //----------Getter------------
-    const TArray<USceneComponent*>& GetComponents() const;
+    const TSet<UActorComponent*>& GetComponents() const;
 
     void SetName(const FString& InName) { Name = InName; }
     const FName& GetName() { return Name; }
@@ -91,10 +90,17 @@ public:
     void SetActorHiddenInGame(bool bNewHidden) { bHiddenInGame = bNewHidden; }
     bool GetActorHiddenInGame() const { return bHiddenInGame; }
     bool IsActorVisible() const { return !bHiddenInGame; }
-    void AddComponent(USceneComponent* Component);
+
+    // Tick In Editor
+    void SetActorTickInEditorEnabled(bool bTickInEditor) { bTickInEditor = bTickInEditor; }
+    bool IsActorTickInEditorEnabled() const { return bTickInEditor; }
+
+    void AddComponent(UActorComponent* Component);
+
 protected:
-    TArray<USceneComponent*> Components;
+    TSet<UActorComponent*> Components;
     bool bIsPicked = false;
     bool bCanEverTick = true;
     bool bHiddenInGame = false;
+    bool bTickInEditor = false;
 };

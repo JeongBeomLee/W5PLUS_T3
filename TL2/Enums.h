@@ -376,4 +376,25 @@ inline bool HasShowFlag(EEngineShowFlags flags, EEngineShowFlags flag)
     return (flags & flag) != EEngineShowFlags::None;
 }
 
+namespace EEndPlayReason
+{
+    enum Type
+    {
+        Destroyed,
+        LevelTransition,
+        EndPlayInEditor,
+        RemovedFromWorld,
+        Quit
+    };
+}
+
+enum class EWorldType : uint8
+{
+    None,
+    Editor,
+    EditorPreview,
+    PIE,
+    Game
+};
+
 //#endif /** UE_ENUMS_H */

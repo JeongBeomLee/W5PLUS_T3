@@ -28,13 +28,12 @@ public:
 
     void SetTickEnabled(bool bNewTick) { bCanEverTick = bNewTick; }
     bool CanEverTick() const { return bCanEverTick; }
+    bool IsComponentTickEnabled() const { return bIsActive && bCanEverTick; }
 
     // ───────────────
     // Owner Actor
     // ───────────────
-    void SetOwner(AActor* InOwner) {
-        Owner = InOwner;
-    }
+    void SetOwner(AActor* InOwner) { Owner = InOwner; }
     AActor* GetOwner() const { return Owner; }
 
 protected:

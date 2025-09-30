@@ -21,6 +21,7 @@ struct FPrimitiveData;
 class SViewportWindow;
 class UOctree;
 class FBVH;
+class ULevel;
 /**
  * UWorld
  * - 월드 단위의 액터/타임/매니저 관리 클래스
@@ -117,9 +118,10 @@ public:
     FBVH* GetBVH() { return BVH; }
     
 
-    
     /** === 레벨 / 월드 구성 === */
-    // TArray<ULevel*> Levels;
+    ULevel* GetLevel() const { return Level; }
+    EWorldType GetWorldType() const { return WorldType; }
+    void SetWorldType(EWorldType InWorldType) { WorldType = InWorldType; }
 
     /** === 플레이어 / 컨트롤러 === */
     // APlayerController* GetFirstPlayerController() const;
@@ -146,6 +148,10 @@ private:
     SMultiViewportWindow* MultiViewport = nullptr;
 
     TArray<FPrimitiveData> Primitives;
+
+    /** === 레벨 / 월드 타입 === */
+    ULevel* Level = nullptr;
+    EWorldType WorldType = EWorldType::Editor;
 
     /** === 액터 관리 === */
     TArray<AActor*> EngineActors;

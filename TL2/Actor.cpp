@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "Actor.h"
-#include "SceneComponent.h"
+#include "ActorComponent.h"
 #include "ObjectFactory.h"
 #include "ShapeComponent.h"
 #include "AABoundingBoxComponent.h"   
@@ -25,7 +25,7 @@ AActor::~AActor()
     //    RootComponent = nullptr;
     //}
     // 2) Delete any remaining components not under the root tree (safe: DeleteObject checks GUObjectArray)
-    for (USceneComponent*& Comp : Components)
+    for (UActorComponent* Comp : Components)
     {
         if (Comp)
         {
@@ -39,10 +39,38 @@ AActor::~AActor()
 
 void AActor::BeginPlay()
 {
+    // 소유한 모든 컴포넌트의 BeginPlay 호출
+    for (UActorComponent* Component : Components)
+    {
+        if (Component)
+        {
+            Component->BeginPlay();
+        }
+    }
+}
+
+void AActor::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    // 소유한 모든 컴포넌트의 EndPlay 호출
+    for (UActorComponent* Component : Components)
+    {
+        if (Component)
+        {
+            Component->EndPlay();
+        }
+    }
 }
 
 void AActor::Tick(float DeltaSeconds)
 {
+    // 소유한 모든 컴포넌트의 Tick 처리
+    for (UActorComponent* Component : Components)
+    {
+        if (Component && Component->IsComponentTickEnabled())
+        {
+            Component->TickComponent(DeltaSeconds);
+        }
+    }
 }
 
 void AActor::Destroy()
@@ -178,22 +206,22 @@ void AActor::AddActorLocalLocation(const FVector& DeltaLocation)
     }
 }
 
-const TArray<USceneComponent*>& AActor::GetComponents() const
+const TSet<UActorComponent*>& AActor::GetComponents() const
 {
     return Components;
 }
 
-void AActor::AddComponent(USceneComponent* Component)
+void AActor::AddComponent(UActorComponent* Component)
 {
     if (!Component)
     {
         return;
     }
 
-    Components.push_back(Component);
+    Components.insert(Component);
     if (!RootComponent)
     {
-        RootComponent = Component;
+        RootComponent = Cast<USceneComponent>(Component);
         //Component->SetupAttachment(RootComponent);
     }
 }

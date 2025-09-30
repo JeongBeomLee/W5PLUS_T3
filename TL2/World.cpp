@@ -17,6 +17,7 @@
 #include "Frustum.h"
 #include "Octree.h"
 #include "BVH.h"
+#include "Level.h"
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -27,6 +28,8 @@ UWorld::UWorld() : ResourceManager(UResourceManager::GetInstance())
 , SelectionManager(USelectionManager::GetInstance())
 , BVH(nullptr)
 {
+    Level = NewObject<ULevel>();
+    WorldType = EWorldType::Editor;
 }
 UWorld& UWorld::GetInstance()
 {
@@ -51,9 +54,16 @@ UWorld::~UWorld()
 	ObjectFactory::DeleteObject(MainCameraActor);
 	MainCameraActor = nullptr;
 
-	// Grid 정리 
+	// Grid 정리
 	ObjectFactory::DeleteObject(GridActor);
 	GridActor = nullptr;
+
+	// Level 정리
+	if (Level)
+	{
+		ObjectFactory::DeleteObject(Level);
+		Level = nullptr;
+	}
 
 	// BVH 정리
 	if (BVH)
@@ -198,14 +208,10 @@ void UWorld::Render()
 	UIManager.Render();
 
 	// UIManager의 뷰포트 전환 상태에 따라 렌더링 변경 SWidget으로 변경해줄거임
-
-
 	if (MultiViewport)
 	{
 		MultiViewport->OnRender();
 	}
-
-
 
 	//프레임 종료 
 	UIManager.EndFrame();
@@ -378,7 +384,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
 			Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
 
-			for (USceneComponent* Component : Actor->GetComponents())
+			for (UActorComponent* Component : Actor->GetComponents())
 			{
 				if (!Component) continue;
 				if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
@@ -410,7 +416,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 		if (Cast<AGridActor>(EngineActor) && !IsShowFlagEnabled(EEngineShowFlags::SF_Grid))
 			continue;
 
-		for (USceneComponent* Component : EngineActor->GetComponents())
+		for (UActorComponent* Component : EngineActor->GetComponents())
 		{
 			if (!Component) continue;
 			if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
