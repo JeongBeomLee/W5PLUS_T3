@@ -937,7 +937,6 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
 
 	// GizmoActor는 PIE에서 사용하지 않음
 	PIEWorld->GizmoActor = nullptr;
-	//PIEWorld->GizmoActor = EditorWorld->GizmoActor;
 
 	// GridActor 공유 (선택적)
 	PIEWorld->GridActor = nullptr;

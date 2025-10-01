@@ -12,4 +12,3 @@ protected:
 public:
     DECLARE_CLASS(UGizmoScaleComponent, UGizmoArrowComponent)
 };
-
