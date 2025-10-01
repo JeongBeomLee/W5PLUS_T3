@@ -2,6 +2,7 @@
 #include "FPSWidget.h"
 #include "../../ImGui/imgui.h"
 #include "../UIManager.h"
+#include "Globals.h"
 #include <algorithm>
 #include <string>
 
@@ -40,36 +41,39 @@ void UFPSWidget::Initialize()
 
 void UFPSWidget::Update()
 {
-	// UIManager로부터 실제 DeltaTime을 가져옴
-	UUIManager& UIMgr = UUIManager::GetInstance();
-	CurrentDeltaTime = UIMgr.GetDeltaTime();
-	
-	// DeltaTime이 0이면 이전 값 유지 (초기화 시에만 발생)
-	if (CurrentDeltaTime <= 0.0f)
+	if (GWorld->GetWorldType() == EWorldType::PIE || GWorld->GetWorldType() == EWorldType::Game)
 	{
-		CurrentDeltaTime = 0.f;
+		// UIManager로부터 실제 DeltaTime을 가져옴
+		UUIManager& UIMgr = UUIManager::GetInstance();
+		CurrentDeltaTime = UIMgr.GetDeltaTime();
+
+		// DeltaTime이 0이면 이전 값 유지 (초기화 시에만 발생)
+		if (CurrentDeltaTime <= 0.0f)
+		{
+			CurrentDeltaTime = 0.f;
+		}
+
+		TotalGameTime += CurrentDeltaTime;
+
+		// 실제 FPS 계산
+		CurrentFPS = 1.0f / CurrentDeltaTime;
+
+		// FPS 통계 업데이트
+		MaxFPS = max(CurrentFPS, MaxFPS);
+		MinFPS = min(CurrentFPS, MinFPS);
+
+		// 프레임 시간 히스토리 업데이트 (ms 단위)
+		FrameTimeHistory[FrameTimeIndex] = CurrentDeltaTime * 1000.0f;
+		FrameTimeIndex = (FrameTimeIndex + 1) % 60;
+
+		// 평균 프레임 시간 계산
+		float Total = 0.0f;
+		for (int i = 0; i < 60; ++i)
+		{
+			Total += FrameTimeHistory[i];
+		}
+		AverageFrameTime = Total / 60.0f;
 	}
-	
-	TotalGameTime += CurrentDeltaTime;
-
-	// 실제 FPS 계산
-	CurrentFPS = 1.0f / CurrentDeltaTime;
-
-	// FPS 통계 업데이트
-	MaxFPS = max(CurrentFPS, MaxFPS);
-	MinFPS = min(CurrentFPS, MinFPS);
-
-	// 프레임 시간 히스토리 업데이트 (ms 단위)
-	FrameTimeHistory[FrameTimeIndex] = CurrentDeltaTime * 1000.0f;
-	FrameTimeIndex = (FrameTimeIndex + 1) % 60;
-
-	// 평균 프레임 시간 계산
-	float Total = 0.0f;
-	for (int i = 0; i < 60; ++i)
-	{
-		Total += FrameTimeHistory[i];
-	}
-	AverageFrameTime = Total / 60.0f;
 }
 
 void UFPSWidget::RenderWidget()
@@ -129,4 +133,10 @@ ImVec4 UFPSWidget::GetFPSColor(float InFPS)
 	{
 		return {1.0f, 0.0f, 0.0f, 1.0f}; // 빨간색 (주의)
 	}
+}
+
+void UFPSWidget::ResetGameTime()
+{
+	TotalGameTime = 0.0f;
+	PreviousTime = 0.0f;
 }

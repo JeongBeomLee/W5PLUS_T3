@@ -85,6 +85,12 @@ public:
 	void RegisterCameraControlWidget(UCameraControlWidget* InWidget);
 	void SyncCameraControlFromCamera();
 
+	// FPS Widget GameTime 초기화 (PIE 종료 시 호출)
+	void ResetFPSWidgetGameTime();
+
+	// FPS Widget 등록
+	void RegisterFPSWidget(class UFPSWidget* InWidget);
+
 public:
 	UUIManager();
 protected:
@@ -125,4 +131,7 @@ private:
 
 	// Camera Control Widget reference
 	UCameraControlWidget* CameraControlWidgetRef = nullptr;
+
+	// FPS Widget reference
+	class UFPSWidget* FPSWidgetRef = nullptr;
 };

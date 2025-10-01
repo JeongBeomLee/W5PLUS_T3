@@ -148,20 +148,21 @@ void UEditorEngine::Tick(float DeltaSeconds)
         return; // 이번 틱은 스킵
     }
 
-    for (FWorldContext& WorldContext : WorldContexts)
+    // PIE 월드가 있으면 PIE만 틱, 없으면 Editor만 틱
+    UWorld* PIEWorld = GetPIEWorld();
+
+    if (PIEWorld)
     {
-        UWorld* World = WorldContext.GetWorld();
-        if (!World) continue;
-
-        switch (WorldContext.GetWorldType())
+        // PIE 모드: PIE 월드만 틱
+        TickPIEWorld(PIEWorld, DeltaSeconds);
+    }
+    else
+    {
+        // Editor 모드: Editor 월드만 틱
+        UWorld* EditorWorld = GetEditorWorld();
+        if (EditorWorld)
         {
-        case EWorldType::Editor:
-            TickEditorWorld(World, DeltaSeconds);
-            break;
-
-        case EWorldType::PIE:
-            TickPIEWorld(World, DeltaSeconds);
-            break;
+            TickEditorWorld(EditorWorld, DeltaSeconds);
         }
     }
 }
@@ -271,6 +272,9 @@ void UEditorEngine::CleanupPIE()
 
     // PIE 월드 삭제
     ObjectFactory::DeleteObject(PIEWorld);
+
+    // FPS Widget의 GameTime 초기화
+    UUIManager::GetInstance().ResetFPSWidgetGameTime();
 
     UE_LOG("PIE Stopped (Deferred)\n");
 }

@@ -8,6 +8,7 @@
 #include "../imGui/imgui_impl_win32.h"
 #include "UI/Widget/TargetActorTransformWidget.h"
 #include "UI/Widget/CameraControlWidget.h"
+#include "UI/Widget/FPSWidget.h"
 
 UUIManager::UUIManager()
 {
@@ -452,6 +453,19 @@ void UUIManager::SyncCameraControlFromCamera()
 	if (CameraControlWidgetRef)
 	{
 		CameraControlWidgetRef->SyncFromCamera();
+	}
+}
+
+void UUIManager::RegisterFPSWidget(UFPSWidget* InWidget)
+{
+	FPSWidgetRef = InWidget;
+}
+
+void UUIManager::ResetFPSWidgetGameTime()
+{
+	if (FPSWidgetRef)
+	{
+		FPSWidgetRef->ResetGameTime();
 	}
 }
 

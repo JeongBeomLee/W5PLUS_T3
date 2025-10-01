@@ -17,6 +17,9 @@ public:
 
 	static ImVec4 GetFPSColor(float InFPS);
 
+	// GameTime 초기화 (PIE 종료 시 호출)
+	void ResetGameTime();
+
 	// Special Member Function
 	UFPSWidget();
 	~UFPSWidget() override;

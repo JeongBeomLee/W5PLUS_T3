@@ -33,6 +33,7 @@ UControlPanelWindow::UControlPanelWindow()
 	UFPSWidget* FPSWidget = NewObject<UFPSWidget>();
 	FPSWidget->Initialize();
 	AddWidget(FPSWidget);
+	UUIManager::GetInstance().RegisterFPSWidget(FPSWidget);
 
 	UActorTerminationWidget* ActorTerminationWidget = NewObject<UActorTerminationWidget>();
 	ActorTerminationWidget->Initialize();

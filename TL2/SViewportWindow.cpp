@@ -381,6 +381,9 @@ void SViewportWindow::StartPIE()
 	// PIE 월드의 모든 액터 BeginPlay 호출
 	PIEWorld->InitializeActorsForPlay();
 
+	// FPS Widget의 GameTime 초기화 (PIE 시작 시)
+	UUIManager::GetInstance().ResetFPSWidgetGameTime();
+
 	UE_LOG("PIE Started\n");
 }
 
@@ -400,6 +403,9 @@ void SViewportWindow::EndPIE()
 		// 저장된 View Mode 복구
 		ViewportClient->SetViewModeIndex(SavedViewModeIndex);
 	}
+
+	// FPS Widget의 GameTime 초기화 (PIE 종료 시)
+	UUIManager::GetInstance().ResetFPSWidgetGameTime();
 
 	// PIE 종료 요청 (다음 프레임 시작 시 정리됨)
 	GEditor->RequestEndPIE();
