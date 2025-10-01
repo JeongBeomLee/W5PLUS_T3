@@ -9,13 +9,15 @@ public:
 protected:
 	~UBillboardComponent() override;
 
+	virtual void RenderDetail() override;
+
 public:
-	TArray<FBillboardVertexInfo_GPU> CreateVertices(const FVector& StartPos);
 	virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
 
 	UTextQuad* GetStaticMesh() const { return Quad; }
 
 private:
 	UTextQuad* Quad = nullptr;
+	FString IconPath = "Editor/Icon/Pawn_64x.dds";
 };
 
