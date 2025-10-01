@@ -124,7 +124,10 @@ void UActorTerminationWidget::RenderWidget()
 		}
 		if (ImGui::Selectable("StaticMesh"))
 		{
-			AddComponentAtSelectedActor(NewObject<UStaticMeshComponent>());
+			UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>();
+			AddComponentAtSelectedActor(StaticMeshComponent);
+			StaticMeshComponent->SetStaticMesh("Data/Cube.obj");
+
 		}
 		ImGui::EndPopup();
 	}
