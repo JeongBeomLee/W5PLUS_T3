@@ -405,6 +405,12 @@
     <ClCompile Include="Level.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="EditorEngine.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Globals.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Primitive.hlsl">
@@ -670,9 +676,6 @@
     <ClInclude Include="SSplitterV.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="FViewport.h">
-      <Filter>소스 파일</Filter>
-    </ClInclude>
     <ClInclude Include="FViewportClient.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -743,6 +746,15 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="WorldContext.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="EditorEngine.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="FViewport.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

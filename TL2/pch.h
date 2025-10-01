@@ -47,7 +47,9 @@
 #include "UI/GlobalConsole.h"
 #include "D3D11RHI.h"
 #include "ObjectFactory.h"
+#include "EditorEngine.h"
 #include "World.h"
+
 // d3dtk
 #include "d3dtk/SimpleMath.h"
 

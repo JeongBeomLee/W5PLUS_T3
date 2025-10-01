@@ -41,14 +41,16 @@
 #include "DynamicMesh.h"
 #include "LineDynamicMesh.h"
 #include "TextQuad.h"
-#include"RenderViewportSwitcherWidget.h"
+#include "RenderViewportSwitcherWidget.h"
 #include "MenuBarWidget.h"
-#include"Octree.h"
+#include "Octree.h"
 #include "Level.h"
+#include "EditorEngine.h"
+
 // ... (rest of the file)
+IMPLEMENT_CLASS(UEditorEngine)
 IMPLEMENT_CLASS(UWorld)
 IMPLEMENT_CLASS(ULevel)
-
 
 IMPLEMENT_CLASS(UPrimitiveComponent)
 IMPLEMENT_CLASS(UActorComponent)

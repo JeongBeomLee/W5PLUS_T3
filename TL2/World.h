@@ -32,8 +32,7 @@ public:
     DECLARE_CLASS(UWorld, UObject)
     UWorld();
     ~UWorld() override;
-    static UWorld& GetInstance();
-    
+
 protected:
 
 
@@ -112,6 +111,7 @@ public:
 
     /** === 필요한 엑터 게터 === */
     const TArray<AActor*>& GetActors() { return Level ? Level->GetActors() : Actors; }
+    const TArray<AActor*>& GetEngineActors() const { return EngineActors; }
     AGizmoActor* GetGizmoActor();
     AGridActor* GetGridActor() { return GridActor; }
 

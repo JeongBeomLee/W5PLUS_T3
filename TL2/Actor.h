@@ -102,6 +102,10 @@ public:
     // Tick Enabled Check
     bool IsActorTickEnabled() const { return bCanEverTick; }
 
+    // Tick 조건 헬퍼 함수들
+    bool ShouldTickInEditor() const { return bTickInEditor; }
+    bool CanTickInPlayMode() const { return bCanEverTick && !bHiddenInGame; }
+
     void AddComponent(UActorComponent* Component);
 
 protected:

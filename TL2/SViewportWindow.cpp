@@ -2,7 +2,8 @@
 #include "SViewportWindow.h"
 #include "World.h"
 #include "ImGui/imgui.h"
-#include"SMultiViewportWindow.h"
+#include "SMultiViewportWindow.h"
+#include "Globals.h"
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
 SViewportWindow::SViewportWindow()
@@ -268,8 +269,8 @@ void SViewportWindow::RenderToolbar()
 
 		if (ImGui::Button("Switch##ToThis", btnSize))
 		{
-			if (auto* MVP = UWorld::GetInstance().GetMultiViewportWindow())
-				MVP->SwitchPanel(this);
+			if (GWorld && GWorld->GetMultiViewportWindow())
+				GWorld->GetMultiViewportWindow()->SwitchPanel(this);
 		}
 
 		//ImGui::PopStyleVar();
@@ -281,13 +282,13 @@ void SViewportWindow::RenderToolbar()
 // PIE 시작
 void SViewportWindow::StartPIE()
 {
-	if (!ViewportClient || PIEWorld != nullptr)
+	if (!GEditor || !ViewportClient || PIEWorld != nullptr)
 	{
 		return; // 이미 PIE 실행 중
 	}
 
-	// 현재 Editor 월드 저장
-	EditorWorld = ViewportClient->GetWorld();
+	// Editor 월드 가져오기
+	EditorWorld = GEditor->GetEditorWorld();
 	if (!EditorWorld)
 	{
 		return;
@@ -299,6 +300,16 @@ void SViewportWindow::StartPIE()
 	{
 		return;
 	}
+
+	// PIE 월드를 WorldContext로 등록
+	FWorldContext* PIEContext = GEditor->CreateWorldContext(PIEWorld, EWorldType::PIE);
+	if (PIEContext)
+	{
+		PIEContext->OwningEditorWorld = EditorWorld;
+	}
+
+	// GWorld를 PIE 월드로 전환
+	GWorld = PIEWorld;
 
 	// ViewportClient를 PIE 월드로 전환
 	ViewportClient->SetWorld(PIEWorld);
@@ -312,22 +323,31 @@ void SViewportWindow::StartPIE()
 // PIE 종료
 void SViewportWindow::EndPIE()
 {
-	if (!PIEWorld)
+	if (!GEditor || !PIEWorld)
 	{
 		return; // PIE 실행 중이 아님
 	}
 
 	// ViewportClient를 Editor 월드로 먼저 복원
+	EditorWorld = GEditor->GetEditorWorld();
 	if (EditorWorld && ViewportClient)
 	{
 		ViewportClient->SetWorld(EditorWorld);
 	}
 
+	// GWorld를 Editor 월드로 복원
+	GWorld = EditorWorld;
+
 	// PIE 월드 정리 (CleanupWorld 호출)
 	PIEWorld->CleanupWorld();
 
+	// PIE 월드를 WorldContext에서 제거
+	GEditor->RemoveWorldContext(PIEWorld);
+
+	// PIE 월드 삭제
 	ObjectFactory::DeleteObject(PIEWorld);
 	PIEWorld = nullptr;
+	EditorWorld = nullptr;
 
 	UE_LOG("PIE Stopped\n");
 }

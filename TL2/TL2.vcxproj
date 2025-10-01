@@ -162,8 +162,10 @@
     <ClCompile Include="AABoundingBoxComponent.cpp" />
     <ClCompile Include="BoundingVolumeHierarchy.cpp" />
     <ClCompile Include="BVH.cpp" />
+    <ClCompile Include="EditorEngine.cpp" />
     <ClCompile Include="Frustum.cpp" />
     <ClCompile Include="FViewportClient.cpp" />
+    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Level.cpp" />
     <ClCompile Include="MenuBarWidget.cpp" />
     <ClCompile Include="ObjManager.cpp" />
@@ -334,8 +336,10 @@
     <ClInclude Include="Archive.h" />
     <ClInclude Include="BoundingVolumeHierarchy.h" />
     <ClInclude Include="BVH.h" />
+    <ClInclude Include="EditorEngine.h" />
     <ClInclude Include="Frustum.h" />
     <ClInclude Include="FViewportClient.h" />
+    <ClInclude Include="Globals.h" />
     <ClInclude Include="Level.h" />
     <ClInclude Include="MenuBarWidget.h" />
     <ClInclude Include="ObjManager.h" />

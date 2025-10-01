@@ -31,16 +31,6 @@ UWorld::UWorld() : ResourceManager(UResourceManager::GetInstance())
     WorldType = EWorldType::Editor;
 }
 
-UWorld& UWorld::GetInstance()
-{
-	static UWorld* Instance = nullptr;
-	if (Instance == nullptr)
-	{
-		Instance = NewObject<UWorld>();
-	}
-	return *Instance;
-}
-
 UWorld::~UWorld()
 {
 	// Level의 Actors 정리 (PIE는 복제된 액터들만 삭제)
@@ -116,11 +106,6 @@ static void DebugRTTI_UObject(UObject* Obj, const char* Title)
 	UE_LOG(buf);
 	std::snprintf(buf, sizeof(buf), "[RTTI] IsA<ACameraActor> = %d\r\n", (int)Obj->IsA<ACameraActor>());
 	UE_LOG(buf);
-
-	//// 3) 정확한 타입 비교 (파생 제외)
-	//std::snprintf(buf, sizeof(buf), "[RTTI] EXACT ACameraActor = %d\r\n",
-	//    (int)(Obj->GetClass() == ACameraActor::StaticClass()));
-	//UE_LOG(buf);
 
 	// 4) 상속 체인 출력
 	UE_LOG("[RTTI] Inheritance chain: ");
@@ -399,7 +384,6 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 				if (!Component) continue;
 				if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
 					if (!ActorComp->IsActive()) continue;
-
 
 					if (Cast<UTextRenderComponent>(Component) && !IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText))
 						continue;

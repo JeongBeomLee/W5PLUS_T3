@@ -13,6 +13,7 @@
 
 #include "GizmoActor.h"
 #include "GizmoScaleComponent.h"
+#include "Globals.h"
 #include "GizmoRotateComponent.h"
 #include "GizmoArrowComponent.h"
 #include "UI/GlobalConsole.h"
@@ -504,7 +505,7 @@ AActor* CPickingSystem::PerformViewportPicking(const TArray<AActor*>& Actors,
     AActor* finalHitActor = nullptr;
     float finalClosestHitDistance = FLT_MAX;
 
-    FBVH* BVH = UWorld::GetInstance().GetBVH();
+    FBVH* BVH = GWorld ? GWorld->GetBVH() : nullptr;
     if (BVH)
     {
         // 3. BVH로 Ray와 가장 가까운 Actor 반환
@@ -1359,7 +1360,7 @@ AActor* CPickingSystem::PerformOctreeBasedPicking(const TArray<AActor*>& Actors,
     float adaptiveThreshold = GetAdaptiveThreshold(cameraDistanceEstimate);
 
     // Octree 우선 사용
-    UOctree* Octree = UWorld::GetInstance().GetOctree();
+    UOctree* Octree = GWorld ? GWorld->GetOctree() : nullptr;
     if (Octree)
     {
         TArray<AActor*> HitActors;
@@ -1470,7 +1471,7 @@ AActor* CPickingSystem::PerformGlobalBVHPicking(const TArray<AActor*>& Actors,
     float adaptiveThreshold = GetAdaptiveThreshold(cameraDistanceEstimate);
 
     // Global BVH 우선 사용
-    FBVH* BVH = UWorld::GetInstance().GetBVH();
+    FBVH* BVH = GWorld ? GWorld->GetBVH() : nullptr;
     if (BVH)
     {
         float hitDistance;

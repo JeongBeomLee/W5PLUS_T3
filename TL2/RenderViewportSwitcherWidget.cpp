@@ -3,6 +3,7 @@
 #include "SMultiViewportWindow.h"
 #include "World.h"
 #include "ImGui/imgui.h"
+#include "Globals.h"
 
 URenderViewportSwitcherWidget::URenderViewportSwitcherWidget()
 {
@@ -44,7 +45,8 @@ void URenderViewportSwitcherWidget::RenderWidget()
 
         if (ImGui::Button("Single View", ImVec2(120, 35)))
         {
-            UWorld::GetInstance().GetMultiViewportWindow()->SwitchLayout(EViewportLayoutMode::SingleMain);
+            if (GWorld && GWorld->GetMultiViewportWindow())
+                GWorld->GetMultiViewportWindow()->SwitchLayout(EViewportLayoutMode::SingleMain);
             bUseMainViewport = true;
             UE_LOG("UIManager: Switched to Main Viewport mode");
         }
@@ -71,7 +73,8 @@ void URenderViewportSwitcherWidget::RenderWidget()
 
         if (ImGui::Button("Multi View", ImVec2(120, 35)))
         {
-            UWorld::GetInstance().GetMultiViewportWindow()->SwitchLayout(EViewportLayoutMode::FourSplit);
+            if (GWorld && GWorld->GetMultiViewportWindow())
+                GWorld->GetMultiViewportWindow()->SwitchLayout(EViewportLayoutMode::FourSplit);
             bUseMainViewport = false;
             UE_LOG("UIManager: Switched to Multi Viewport mode");
         }

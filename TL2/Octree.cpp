@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "Octree.h"
+#include "Globals.h"
 
 UOctree::UOctree()
 {
@@ -108,7 +109,8 @@ void UOctree::BuildRecursive(FOctreeNode* ChildNode, const TArray<AActor*>& InAc
 void UOctree::Render(FOctreeNode* ParentNode) {
     if (ParentNode) {
         ParentNode->AABoundingBoxComponent->SetLineColor({ 1.0f, 1.0f, 0.0f, 1.0f }); // 노란색);
-        ParentNode->AABoundingBoxComponent->Render(UWorld::GetInstance().GetRenderer(), FMatrix::Identity(), FMatrix::Identity());
+        if (GWorld)
+            ParentNode->AABoundingBoxComponent->Render(GWorld->GetRenderer(), FMatrix::Identity(), FMatrix::Identity());
 
         //// BVH 렌더링 추가
         //if (ParentNode->MicroBVH && ParentNode->IsLeafNode()) {
@@ -120,7 +122,8 @@ void UOctree::Render(FOctreeNode* ParentNode) {
         if (!Root) {
             return;
         }
-        Root->AABoundingBoxComponent->Render(UWorld::GetInstance().GetRenderer(), FMatrix::Identity(), FMatrix::Identity());
+        if (GWorld)
+            Root->AABoundingBoxComponent->Render(GWorld->GetRenderer(), FMatrix::Identity(), FMatrix::Identity());
 
         // 루트 노드의 BVH 렌더링
         if (Root->MicroBVH && Root->IsLeafNode()) {
@@ -323,7 +326,6 @@ void UOctree::RenderBVH(FBVH* BVH)
             UAABoundingBoxComponent* BVHBoundingBox = NewObject<UAABoundingBoxComponent>();
             BVHBoundingBox->SetMinMax(Node.BoundingBox);
             BVHBoundingBox->SetLineColor((1.0f, 0.0f, 0.0f, 1.0f));
-           // BVHBoundingBox->Render(UWorld::GetInstance().GetRenderer(), FMatrix::Identity(), FMatrix::Identity());
 
             // 메모리 정리
             ObjectFactory::DeleteObject(BVHBoundingBox);
