@@ -9,6 +9,9 @@ public:
 
     AStaticMeshActor();
     virtual void Tick(float DeltaTime) override;
+
+    // 복제 시스템
+    virtual UObject* Duplicate() override;
 protected:
     ~AStaticMeshActor() override;
 

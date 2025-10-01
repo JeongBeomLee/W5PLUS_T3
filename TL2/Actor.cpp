@@ -258,20 +258,55 @@ UObject* AActor::Duplicate()
 // 서브 오브젝트(Components) 복제
 void AActor::DuplicateSubObjects()
 {
-    // Components를 깊은 복사
+    // 1단계: 컴포넌트 복제 및 매핑 테이블 생성
     TSet<UActorComponent*> OriginalComponents = Components;
     Components.clear();
 
-    for (UActorComponent* OriginalComp : OriginalComponents)
+    // 원본 -> 복제본 매핑
+    TMap<UActorComponent*, UActorComponent*> ComponentMap;
+
+    for (UActorComponent* OriginalComponent : OriginalComponents)
     {
-        if (OriginalComp)
+        if (OriginalComponent)
         {
-             UActorComponent* NewComp = Cast<UActorComponent>(OriginalComp->Duplicate());
-             if (NewComp)
-             {
-                 NewComp->SetOwner(this);
-                 AddComponent(NewComp);
-             }
+            UActorComponent* NewComp = Cast<UActorComponent>(OriginalComponent->Duplicate());
+            if (NewComp)
+            {
+                NewComp->SetOwner(this);
+                AddComponent(NewComp);
+                ComponentMap[OriginalComponent] = NewComp;
+            }
+        }
+    }
+
+    // 2단계: SceneComponent 계층 구조 복원
+    for (const auto& Pair : ComponentMap)
+    {
+        USceneComponent* OriginalSceneComponent = Cast<USceneComponent>(Pair.first);
+        USceneComponent* NewSceneComponent = Cast<USceneComponent>(Pair.second);
+
+        if (OriginalSceneComponent && NewSceneComponent)
+        {
+            // 원본의 AttachParent가 있으면 복제본도 동일한 계층 구조로 설정
+            USceneComponent* OriginalParent = OriginalSceneComponent->GetAttachParent();
+            if (OriginalParent && ComponentMap.find(OriginalParent) != ComponentMap.end())
+            {
+                USceneComponent* NewParent = Cast<USceneComponent>(ComponentMap[OriginalParent]);
+                if (NewParent)
+                {
+                    NewSceneComponent->SetupAttachment(NewParent, EAttachmentRule::KeepRelative);
+                }
+            }
+        }
+    }
+
+    // 3단계: RootComponent 설정
+    if (RootComponent)
+    {
+        USceneComponent* OriginalRootComponent = RootComponent;
+        if (ComponentMap.find(OriginalRootComponent) != ComponentMap.end())
+        {
+            RootComponent = Cast<USceneComponent>(ComponentMap[OriginalRootComponent]);
         }
     }
 }
