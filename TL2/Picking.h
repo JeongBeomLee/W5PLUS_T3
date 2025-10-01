@@ -95,9 +95,6 @@ public:
                                              const FVector2D& ViewportSize,
                                              const FVector2D& ViewportOffset,FViewport*Viewport);
     
-    // 기즈모 드래그로 액터를 이동시키는 함수
-    static void DragActorWithGizmo(AActor* Actor, AGizmoActor* GizmoActor, uint32 GizmoAxis, const FVector2D& MouseDelta, const ACameraActor* Camera, EGizmoMode InGizmoMode);
-
     /** === 성능 비교용 특화 함수들 === */
     // Octree 우선 사용하는 피킹 (하이브리드 방식)
     static AActor* PerformOctreeBasedPicking(const TArray<AActor*>& Actors,
@@ -123,5 +120,5 @@ public:
 
 private:
     /** === 내부 헬퍼 함수들 === */
-    static bool CheckGizmoComponentPicking(const UStaticMeshComponent* Component, const FRay& Ray, float& OutDistance);
+    static bool CheckGizmoComponentPicking(UStaticMeshComponent* Component, const FRay& Ray, float& OutDistance);
 };

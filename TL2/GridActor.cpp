@@ -61,14 +61,14 @@ void AGridActor::CreateGridLines(int32 InGridSize, float InCellSize, const FVect
         const float pos = i * InCellSize;
         const FVector4 color = GetGridLineColor(i);
 
-        // Z축 방향 라인
-        LineComponent->AddLine(FVector(pos, 0.0f, -gridTotalSize), FVector(pos, 0.0f, gridTotalSize), color);
+        // Y축 방향 라인
+        LineComponent->AddLine(FVector(pos, -gridTotalSize, 0.0f), FVector(pos, gridTotalSize, 0.0f), color);
         // X축 방향 라인
-        LineComponent->AddLine(FVector(-gridTotalSize, 0.0f, pos), FVector(gridTotalSize, 0.0f, pos), color);
+        LineComponent->AddLine(FVector(-gridTotalSize, pos, 0.0f), FVector(gridTotalSize, pos, 0.0f), color);
     }
 
-    // 중앙 축 (Z, X)
-    LineComponent->AddLine(FVector(0.0f, 0.0f, -gridTotalSize), FVector(0.0f, 0.0f, 0.0f), FVector4(1.0f, 1.0f, 1.0f, 1.0f));
+    // 중앙 축 (Y, X)
+    LineComponent->AddLine(FVector(0.0f, -gridTotalSize, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector4(1.0f, 1.0f, 1.0f, 1.0f));
     LineComponent->AddLine(FVector(-gridTotalSize, 0.0f, 0.0f), FVector(0.0f, 0.0f, 0.0f), FVector4(1.0f, 1.0f, 1.0f, 1.0f));
 }
 
@@ -79,17 +79,17 @@ void AGridActor::CreateAxisLines(float Length, const FVector& Origin)
     // 변환 전 X축 - 원점에서 +X 방향 => 변환 후 Y축
     LineComponent->AddLine(Origin, 
                           Origin + FVector(Length * CellSize, 0.0f, 0.0f),
-                          FVector4(0.0f, 1.0f, 0.0f, 1.0f));
+                          FVector4(1.0f, 0.0f, 0.0f, 1.0f));
     
     // 변환 전 Y축 - 원점에서 +Y 방향 => 변환 후 Z축
     LineComponent->AddLine(Origin, 
                           Origin + FVector(0.0f, Length * CellSize, 0.0f),
-                          FVector4(0.0f, 0.0f, 1.0f, 1.0f));
+                          FVector4(0.0f, 1.0f, 0.0f, 1.0f));
     
     // 변환 전 Z축 - 원점에서 +Z 방향 => 변환 후 X축
     LineComponent->AddLine(Origin, 
                           Origin + FVector(0.0f, 0.0f, Length * CellSize),
-                          FVector4(1.0f, 0.0f, 0.0f, 1.0f));
+                          FVector4(0.0f, 0.0f, 1.0f, 1.0f));
 }
 
 void AGridActor::ClearLines()

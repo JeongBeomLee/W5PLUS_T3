@@ -106,7 +106,7 @@ UObject* AStaticMeshActor::Duplicate()
                 USceneComponent* NewParent = Cast<USceneComponent>(ComponentMap[OriginalParent]);
                 if (NewParent)
                 {
-                    NewSceneComponent->SetupAttachment(NewParent, EAttachmentRule::KeepRelative);
+                    NewSceneComponent->SetupAttachment(NewParent);
                 }
             }
         }
@@ -134,7 +134,7 @@ UObject* AStaticMeshActor::Duplicate()
     // Transform 복사
     if (this->RootComponent && NewActor->RootComponent)
     {
-        NewActor->SetActorTransform(this->GetActorTransform());
+        NewActor->SetActorTransform(this->RootComponent->GetRelativeTransform());
     }
 
     return NewActor;

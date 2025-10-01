@@ -22,6 +22,7 @@ public:
 
 protected:
     ~UStaticMeshComponent() override;
+    virtual void RenderDetail() override;
 
 public:
     void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;

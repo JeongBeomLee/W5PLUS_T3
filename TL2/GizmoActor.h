@@ -19,15 +19,15 @@ public:
     AGizmoActor();
 
     virtual void Tick(float DeltaSeconds) override;
-    void Render( ACameraActor* Camera, FViewport* Viewport);
+    void Render(ACameraActor* Camera, FViewport* Viewport);
 protected:
     ~AGizmoActor() override;
 
 public:
 
-// ────────────────
-// Getter Functions
-// ────────────────
+    // ────────────────
+    // Getter Functions
+    // ────────────────
     UGizmoArrowComponent* GetArrowX() const { return ArrowX; }
     UGizmoArrowComponent* GetArrowY() const { return ArrowY; }
     UGizmoArrowComponent* GetArrowZ() const { return ArrowZ; }
@@ -54,22 +54,21 @@ public:
     void NextMode(EGizmoMode GizmoMode);
     TArray<USceneComponent*>* GetGizmoComponents();
 
-    
+
     EGizmoMode GetGizmoMode() const;
 
     void OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, float MouseDeltaX, float MouseDeltaY, const ACameraActor* Camera, FViewport* Viewport);
     void OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, float MouseDeltaX, float MouseDeltaY, const ACameraActor* Camera);
-    
+
     // Gizmo interaction methods
     void SetTargetComponent(USceneComponent* InSceneComponent) { TargetComponent = InSceneComponent; Tick(0.f); }
     USceneComponent* GetTargetActor() const { return TargetComponent; }
     void SetCameraActor(ACameraActor* InCameraActor) { CameraActor = InCameraActor; }
     ACameraActor* GetCameraActor() const { return CameraActor; }
-    
+
 
     void ProcessGizmoInteraction(ACameraActor* Camera, FViewport* Viewport, float MousePositionX, float MousePositionY);
     void UpdateConstantScreenScale(ACameraActor* Camera, FViewport* Viewport);
-  
 protected:
 
     UGizmoArrowComponent* ArrowX;
@@ -91,19 +90,19 @@ protected:
     bool bIsDragging = false;
     EGizmoMode CurrentMode;
     EGizmoSpace CurrentSpace = EGizmoSpace::World;
-    
+
     // Interaction state
     USceneComponent* TargetComponent = nullptr;
     ACameraActor* CameraActor = nullptr;
-    
+
     // Manager references
     USelectionManager* SelectionManager = nullptr;
     UInputManager* InputManager = nullptr;
     UUIManager* UIManager = nullptr;
-    
+
     uint32 GizmoAxis{};
     // Gizmo interaction methods
-   
+
     void ProcessGizmoHovering(ACameraActor* Camera, FViewport* Viewport, float MousePositionX, float MousePositionY);
     void ProcessGizmoDragging(ACameraActor* Camera, FViewport* Viewport, float MousePositionX, float MousePositionY);
     void ProcessGizmoModeSwitch();

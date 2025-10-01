@@ -29,8 +29,8 @@ public:
     // ───────────────
     // Transform API
     // ───────────────
-    void SetActorTransform(const FTransform& NewTransform);
-    FTransform GetActorTransform() const;
+    void SetActorTransform(const FTransform& Transform);
+    FTransform GetActorTransform()const;
 
     void SetActorLocation(const FVector& NewLocation);
     FVector GetActorLocation() const;
@@ -47,15 +47,6 @@ public:
     FVector GetActorForward() { return RootComponent->GetForward(); }
     FVector GetActorRight() { return RootComponent->GetRight(); }
     FVector GetActorUp() { return RootComponent->GetUp(); }
-
-    void AddActorWorldRotation(const FQuat& DeltaRotation);
-    void AddActorWorldRotation(const FVector& DeltaEuler);
-    void AddActorWorldLocation(const FVector& DeltaRot);
-
-    void AddActorLocalRotation(const FVector& DeltaEuler);
-
-    void AddActorLocalRotation(const FQuat& DeltaRotation);
-    void AddActorLocalLocation(const FVector& DeltaRot);
 
     void SetWorld(UWorld* InWorld) { World = InWorld; }
     UWorld* GetWorld() const { return World; }

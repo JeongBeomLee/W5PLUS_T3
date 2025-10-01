@@ -18,23 +18,23 @@ UCameraComponent::UCameraComponent()
 
 UCameraComponent::~UCameraComponent() {}
 
-FMatrix UCameraComponent::GetViewMatrix() const
+FMatrix UCameraComponent::GetViewMatrix()
 {
     // Robust path: View = inverse(world) under row-vector convention.
     // Use full transform matrix (translation in last row) and invert affine part.
-    const FMatrix World = GetWorldTransform().ToMatrixWithScaleLocalXYZ();
-    return World.InverseAffine();
+    const FMatrix World = GetWorldMatrix();
+    return World.InverseAffine() * FMatrix::ViewAxis;
 }
 
 
-FMatrix UCameraComponent::GetProjectionMatrix() const
+FMatrix UCameraComponent::GetProjectionMatrix()
 {
     // 기본 구현은 전체 클라이언트 aspect ratio 사용
     float aspect = CLIENTWIDTH / CLIENTHEIGHT;
     return GetProjectionMatrix(aspect);
 }
 
-FMatrix UCameraComponent::GetProjectionMatrix(float ViewportAspectRatio) const
+FMatrix UCameraComponent::GetProjectionMatrix(float ViewportAspectRatio)
 {
     if (ProjectionMode == ECameraProjectionMode::Perspective)
     {
@@ -56,7 +56,7 @@ FMatrix UCameraComponent::GetProjectionMatrix(float ViewportAspectRatio) const
             NearClip, FarClip);
     }
 }
-FMatrix UCameraComponent::GetProjectionMatrix(float ViewportAspectRatio, FViewport* Viewport) const
+FMatrix UCameraComponent::GetProjectionMatrix(float ViewportAspectRatio, FViewport* Viewport)
 {
     if (ProjectionMode == ECameraProjectionMode::Perspective)
     {
@@ -82,15 +82,34 @@ FMatrix UCameraComponent::GetProjectionMatrix(float ViewportAspectRatio, FViewpo
 }
 FVector UCameraComponent::GetForward() const
 {
-    return GetWorldTransform().Rotation.RotateVector(FVector(1, 0, 0)).GetNormalized();
+    if (AttachParent)
+    {
+        const FMatrix& ParentWorldMatrix = AttachParent->GetWorldMatrix();
+        FMatrix ParentWorldAndRot = RelativeTransform.Rotation.ToMatrix() * ParentWorldMatrix;
+        return ParentWorldAndRot.GetForward();
+
+    }
+    return RelativeTransform.Rotation.RotateVector(FVector(1, 0, 0)).GetNormalized();
 }
 
 FVector UCameraComponent::GetRight() const
 {
-    return GetWorldTransform().Rotation.RotateVector(FVector(0, 1, 0)).GetNormalized();
+    if (AttachParent)
+    {
+        const FMatrix& ParentWorldMatrix = AttachParent->GetWorldMatrix();
+        FMatrix ParentWorldAndRot = RelativeTransform.Rotation.ToMatrix() * ParentWorldMatrix;
+        return ParentWorldAndRot.GetRight();
+    }
+    return RelativeTransform.Rotation.RotateVector(FVector(0, 1, 0)).GetNormalized();
 }
 
 FVector UCameraComponent::GetUp() const
 {
-    return GetWorldTransform().Rotation.RotateVector(FVector(0, 0, 1)).GetNormalized();
+    if (AttachParent)
+    {
+        const FMatrix& ParentWorldMatrix = AttachParent->GetWorldMatrix();
+        FMatrix ParentWorldAndRot = RelativeTransform.Rotation.ToMatrix() * ParentWorldMatrix;
+        return ParentWorldAndRot.GetUp();
+    }
+    return RelativeTransform.Rotation.RotateVector(FVector(0, 0, 1)).GetNormalized();
 }

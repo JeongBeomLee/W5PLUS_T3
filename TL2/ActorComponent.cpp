@@ -57,13 +57,8 @@ UObject* UActorComponent::Duplicate()
 
 void UActorComponent::RenderDetailCommon()
 {
-
-    if (ImGui::TreeNode(GetClass()->Name))
-    {
-        RenderDetail();
-        ImGui::TreePop();
-    }
-
+    ImGui::Text(GetClass()->Name);
+    RenderDetail();
 }
 
 void UActorComponent::RenderDetail()
