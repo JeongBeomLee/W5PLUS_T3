@@ -435,13 +435,8 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 	RenderSceneGraph();
 
 	Renderer->EndLineBatch(FMatrix::Identity(), ViewMatrix, ProjectionMatrix);
-
-
 	Renderer->UpdateHighLightConstantBuffer(false, rgb, 0, 0, 0, 0);
-
 }
-
-
 
 void UWorld::Tick(float DeltaSeconds)
 {
