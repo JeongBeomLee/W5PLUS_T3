@@ -232,7 +232,6 @@ void UResourceManager::CreateTextBillboardMesh()
     Add<UTextQuad>("IconBillboard", Mesh2);
 
     UMeshLoader::GetInstance().AddMeshData("TextBillboard", BillboardData);
-    UMeshLoader::GetInstance().AddMeshData("IconBillboard", BillboardData);
 }
 
 void UResourceManager::CreateGridMesh(int N, const FString& FilePath)
