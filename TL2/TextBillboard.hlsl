@@ -30,9 +30,7 @@ PS_INPUT mainVS(VS_INPUT input)
 {
     PS_INPUT output;
 
-    float3 pos_aligned = mul(float4(input.centerPos, 0.0f), viewInverse).xyz;//카메라 회전 무시시키고
-    float3 finalPos_worldspace = textWorldPos + pos_aligned;//월드좌표계에서 원하는 위치에 위치시킨다(4개의 corner점을)
-     
+    float3 finalPos_worldspace = input.centerPos + textWorldPos;
     
     output.pos_screenspace = mul(float4(finalPos_worldspace, 1.0f), mul(viewMatrix, projectionMatrix))*0.1;//월드좌표기준에서 view proj
     
