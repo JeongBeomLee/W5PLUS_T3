@@ -20,92 +20,72 @@ using std::max;
 using std::min;
 using std::to_string;
 
-static inline FString GetBaseNameNoExt(const FString& Path)
-{
-	const size_t Sep = Path.find_last_of("/\\");
-	const size_t Start = (Sep == FString::npos) ? 0 : Sep + 1;
-
-	const FString Ext = ".obj";
-	size_t End = Path.size();
-	if (End >= Ext.size() && Path.compare(End - Ext.size(), Ext.size(), Ext) == 0)
-	{
-		End -= Ext.size();
-	}
-
-	if (Start <= End) 
-	{
-		return Path.substr(Start, End - Start);
-	}
-
-	return Path;
-}
-
 UPrimitiveSpawnWidget::UPrimitiveSpawnWidget()
-	: UWidget("Primitive Spawn Widget")
-	, UIManager(&UUIManager::GetInstance())
+    : UWidget("Primitive Spawn Widget")
+    , UIManager(&UUIManager::GetInstance())
 {
-	// 랜덤 시드 초기화
-	srand(static_cast<unsigned int>(time(nullptr)));
+    // 랜덤 시드 초기화
+    srand(static_cast<unsigned int>(time(nullptr)));
 }
 
 UPrimitiveSpawnWidget::~UPrimitiveSpawnWidget() = default;
 
 void UPrimitiveSpawnWidget::Initialize()
 {
-	// UIManager 참조 확보
-	UIManager = &UUIManager::GetInstance();
+    // UIManager 참조 확보
+    UIManager = &UUIManager::GetInstance();
 }
 
 void UPrimitiveSpawnWidget::Update()
 {
-	// 필요시 업데이트 로직 추가
+    // 필요시 업데이트 로직 추가
 }
 
 UWorld* UPrimitiveSpawnWidget::GetCurrentWorld() const
 {
-	if (!UIManager)
-		return nullptr;
-		
-	return UIManager->GetWorld();
+    if (!UIManager)
+        return nullptr;
+
+    return UIManager->GetWorld();
 }
 
 const char* UPrimitiveSpawnWidget::GetPrimitiveTypeName(int32 TypeIndex) const
 {
-	switch (TypeIndex)
-	{
-	case 0: return "StaticMesh";
-	default: return "Unknown";
-	}
+    switch (TypeIndex)
+    {
+    case 0: return "StaticMesh";
+    default: return "Unknown";
+    }
 }
 
 FVector UPrimitiveSpawnWidget::GenerateRandomLocation() const
 {
-	float RandomX = SpawnRangeMin + (static_cast<float>(rand()) / RAND_MAX) * (SpawnRangeMax - SpawnRangeMin);
-	float RandomY = SpawnRangeMin + (static_cast<float>(rand()) / RAND_MAX) * (SpawnRangeMax - SpawnRangeMin);
-	float RandomZ = SpawnRangeMin + (static_cast<float>(rand()) / RAND_MAX) * (SpawnRangeMax - SpawnRangeMin);
-	
-	return FVector(RandomX, RandomY, RandomZ);
+    float RandomX = SpawnRangeMin + (static_cast<float>(rand()) / RAND_MAX) * (SpawnRangeMax - SpawnRangeMin);
+    float RandomY = SpawnRangeMin + (static_cast<float>(rand()) / RAND_MAX) * (SpawnRangeMax - SpawnRangeMin);
+    float RandomZ = SpawnRangeMin + (static_cast<float>(rand()) / RAND_MAX) * (SpawnRangeMax - SpawnRangeMin);
+
+    return FVector(RandomX, RandomY, RandomZ);
 }
 
 float UPrimitiveSpawnWidget::GenerateRandomScale() const
 {
-	if (!bRandomScale)
-		return 1.0f;
-		
-	return MinScale + (static_cast<float>(rand()) / RAND_MAX) * (MaxScale - MinScale);
+    if (!bRandomScale)
+        return 1.0f;
+
+    return MinScale + (static_cast<float>(rand()) / RAND_MAX) * (MaxScale - MinScale);
 }
 
 FQuat UPrimitiveSpawnWidget::GenerateRandomRotation() const
 {
-	if (!bRandomRotation)
-		return FQuat::Identity();
-	
-	// 랜덤 오일러 각도 생성 (도 단위)
-	float RandomPitch = (static_cast<float>(rand()) / RAND_MAX) * 360.0f - 180.0f;
-	float RandomYaw = (static_cast<float>(rand()) / RAND_MAX) * 360.0f - 180.0f;
-	float RandomRoll = (static_cast<float>(rand()) / RAND_MAX) * 360.0f - 180.0f;
-	
-	return FQuat::MakeFromEuler(FVector(RandomPitch, RandomYaw, RandomRoll));
+    if (!bRandomRotation)
+        return FQuat::Identity;
+
+    // 랜덤 오일러 각도 생성 (도 단위)
+    float RandomPitch = (static_cast<float>(rand()) / RAND_MAX) * 360.0f - 180.0f;
+    float RandomYaw = (static_cast<float>(rand()) / RAND_MAX) * 360.0f - 180.0f;
+    float RandomRoll = (static_cast<float>(rand()) / RAND_MAX) * 360.0f - 180.0f;
+
+    return FQuat::MakeFromEuler(FVector(RandomPitch, RandomYaw, RandomRoll));
 }
 
 void UPrimitiveSpawnWidget::RenderWidget()
@@ -191,23 +171,23 @@ void UPrimitiveSpawnWidget::RenderWidget()
         SpawnActors();
     }
 
-	////Obj Parser 테스트용
-	//static std::string fileName;  // 입력값 저장용
-	//// 입력창
-	//char buffer[256];
-	//strncpy_s(buffer, fileName.c_str(), sizeof(buffer));
-	//buffer[sizeof(buffer) - 1] = '\0';
+    ////Obj Parser 테스트용
+    //static std::string fileName;  // 입력값 저장용
+    //// 입력창
+    //char buffer[256];
+    //strncpy_s(buffer, fileName.c_str(), sizeof(buffer));
+    //buffer[sizeof(buffer) - 1] = '\0';
 
-	//if (ImGui::InputText("file name", buffer, sizeof(buffer))) {
-	//	fileName = buffer;  // std::string으로 갱신
-	//}
-	//// 버튼
-	//if (ImGui::Button("Spawn Dice Test")) {
-	//	FObjManager::LoadObjStaticMesh("spaceCompound.obj");
-	//}
+    //if (ImGui::InputText("file name", buffer, sizeof(buffer))) {
+    //	fileName = buffer;  // std::string으로 갱신
+    //}
+    //// 버튼
+    //if (ImGui::Button("Spawn Dice Test")) {
+    //	FObjManager::LoadObjStaticMesh("spaceCompound.obj");
+    //}
 
-	ImGui::Spacing();
-	ImGui::Separator();
+    ImGui::Spacing();
+    ImGui::Separator();
 
     // 스폰 범위 설정
     ImGui::Text("Spawn Settings");

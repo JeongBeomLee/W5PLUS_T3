@@ -1,6 +1,6 @@
 ﻿#include "pch.h"
 #include "ActorComponent.h"
-
+#include "ImGui/imgui.h"
 UActorComponent::UActorComponent()
     : Owner(nullptr), bIsActive(true), bCanEverTick(false)
 {
@@ -52,4 +52,21 @@ UObject* UActorComponent::Duplicate()
     // Owner는 복제 후 외부에서 설정 (AActor::DuplicateSubObjects에서)
 
     return NewComponent;
+}
+
+
+void UActorComponent::RenderDetailCommon()
+{
+
+    if (ImGui::TreeNode(GetClass()->Name))
+    {
+        RenderDetail();
+        ImGui::TreePop();
+    }
+
+}
+
+void UActorComponent::RenderDetail()
+{
+
 }

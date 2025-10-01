@@ -25,10 +25,10 @@ void URenderer::BeginFrame()
 {
     // 렌더링 통계 수집 시작
     URenderingStatsCollector::GetInstance().BeginFrame();
-    
+
     // 상태 추적 리셋
     ResetRenderStateTracking();
-    
+
     // 백버퍼/깊이버퍼를 클리어
     RHIDevice->ClearBackBuffer();  // 배경색
     RHIDevice->ClearDepthBuffer(1.0f, 0);                 // 깊이값 초기화
@@ -57,7 +57,7 @@ void URenderer::PrepareShader(UShader* InShader)
         URenderingStatsCollector::GetInstance().IncrementShaderChanges();
         LastShader = InShader;
     }
-    
+
     RHIDevice->GetDeviceContext()->VSSetShader(InShader->GetVertexShader(), nullptr, 0);
     RHIDevice->GetDeviceContext()->PSSetShader(InShader->GetPixelShader(), nullptr, 0);
     RHIDevice->GetDeviceContext()->IASetInputLayout(InShader->GetInputLayout());
@@ -90,9 +90,9 @@ void URenderer::UpdateHighLightConstantBuffer(const uint32 InPicked, const FVect
     RHIDevice->UpdateHighLightConstantBuffers(InPicked, InColor, X, Y, Z, Gizmo);
 }
 
-void URenderer::UpdateBillboardConstantBuffers(const FVector& pos,const FMatrix& ViewMatrix, const FMatrix& ProjMatrix, const FVector& CameraRight, const FVector& CameraUp)
+void URenderer::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix, const FVector& CameraRight, const FVector& CameraUp)
 {
-    RHIDevice->UpdateBillboardConstantBuffers(pos,ViewMatrix, ProjMatrix, CameraRight, CameraUp);
+    RHIDevice->UpdateBillboardConstantBuffers(pos, ViewMatrix, ProjMatrix, CameraRight, CameraUp);
 }
 
 void URenderer::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
@@ -112,10 +112,14 @@ void URenderer::UpdateUVScroll(const FVector2D& Speed, float TimeSec)
 
 void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITIVE_TOPOLOGY InTopology, const TArray<FMaterialSlot>& InComponentMaterialSlots)
 {
+    if (InMesh == nullptr)
+    {
+        return;
+    }
     URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
-    
+
     // 디버그: StaticMesh 렌더링 통계
-    
+
     UINT stride = 0;
     switch (InMesh->GetVertexType())
     {
@@ -160,20 +164,20 @@ void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITI
             const UMaterial* const Material = UResourceManager::GetInstance().Get<UMaterial>(InComponentMaterialSlots[i].MaterialName);
             const FObjMaterialInfo& MaterialInfo = Material->GetMaterialInfo();
             bool bHasTexture = !(MaterialInfo.DiffuseTextureFileName.empty());
-            
+
             // 재료 변경 추적
             if (LastMaterial != Material)
             {
                 StatsCollector.IncrementMaterialChanges();
                 LastMaterial = const_cast<UMaterial*>(Material);
             }
-            
+
             FTextureData* TextureData = nullptr;
             if (bHasTexture)
             {
                 FWideString WTextureFileName(MaterialInfo.DiffuseTextureFileName.begin(), MaterialInfo.DiffuseTextureFileName.end()); // 단순 ascii라고 가정
                 TextureData = UResourceManager::GetInstance().CreateOrGetTextureData(WTextureFileName);
-                
+
                 // 텍스처 변경 추적 (임시로 FTextureData*를 UTexture*로 캠스트)
                 UTexture* CurrentTexture = reinterpret_cast<UTexture*>(TextureData);
                 if (LastTexture != CurrentTexture)
@@ -181,12 +185,12 @@ void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITI
                     StatsCollector.IncrementTextureChanges();
                     LastTexture = CurrentTexture;
                 }
-                
+
                 RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &(TextureData->TextureSRV));
             }
-            
+
             RHIDevice->UpdatePixelConstantBuffers(MaterialInfo, true, bHasTexture); // PSSet도 해줌
-            
+
             // DrawCall 수실행 및 통계 추가
             RHIDevice->GetDeviceContext()->DrawIndexed(MeshGroupInfos[i].IndexCount, MeshGroupInfos[i].StartIndex, 0);
             StatsCollector.IncrementDrawCalls();
@@ -204,9 +208,9 @@ void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITI
 void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {
     URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
-    
+
     // 디버그: TextRenderComponent 렌더링 통계
-    
+
     UINT Stride = sizeof(FBillboardVertexInfo_GPU);
     ID3D11Buffer* VertexBuff = Comp->GetStaticMesh()->GetVertexBuffer();
     ID3D11Buffer* IndexBuff = Comp->GetStaticMesh()->GetIndexBuffer();
@@ -218,7 +222,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_
         StatsCollector.IncrementMaterialChanges();
         LastMaterial = CompMaterial;
     }
-    
+
     UShader* CompShader = CompMaterial->GetShader();
     // 셰이더 변경 추적
     if (LastShader != CompShader)
@@ -226,10 +230,10 @@ void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_
         StatsCollector.IncrementShaderChanges();
         LastShader = CompShader;
     }
-    
+
     RHIDevice->GetDeviceContext()->IASetInputLayout(CompShader->GetInputLayout());
 
-    
+
     UINT offset = 0;
     RHIDevice->GetDeviceContext()->IASetVertexBuffers(
         0, 1, &VertexBuff, &Stride, &offset
@@ -245,7 +249,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_
         StatsCollector.IncrementTextureChanges();
         LastTexture = CompTexture;
     }
-    
+
     ID3D11ShaderResourceView* TextureSRV = CompTexture->GetShaderResourceView();
     RHIDevice->PSSetDefaultSampler(0);
     RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &TextureSRV);
@@ -257,7 +261,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_
 void URenderer::SetViewModeType(EViewModeIndex ViewModeIndex)
 {
     RHIDevice->RSSetState(ViewModeIndex);
-    if(ViewModeIndex == EViewModeIndex::VMI_Wireframe)
+    if (ViewModeIndex == EViewModeIndex::VMI_Wireframe)
         RHIDevice->UpdateColorConstantBuffers(FVector4{ 1.f, 0.f, 0.f, 1.f });
     else
         RHIDevice->UpdateColorConstantBuffers(FVector4{ 1.f, 1.f, 1.f, 0.f });
@@ -268,11 +272,11 @@ void URenderer::EndFrame()
     // 렌더링 통계 수집 종료
     URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
     StatsCollector.EndFrame();
-    
+
     // 현재 프레임 통계를 업데이트
     const FRenderingStats& CurrentStats = StatsCollector.GetCurrentFrameStats();
     StatsCollector.UpdateFrameStats(CurrentStats);
-    
+
     // 평균 통계를 얻어서 오버레이에 업데이트
     const FRenderingStats& AvgStats = StatsCollector.GetAverageStats();
     UStatsOverlayD2D::Get().UpdateRenderingStats(
@@ -281,7 +285,7 @@ void URenderer::EndFrame()
         AvgStats.TextureChanges,
         AvgStats.ShaderChanges
     );
-    
+
     RHIDevice->Present();
 }
 
@@ -294,7 +298,7 @@ void URenderer::InitializeLineBatch()
 {
     // Create UDynamicMesh for efficient line batching
     DynamicLineMesh = UResourceManager::GetInstance().Load<ULineDynamicMesh>("Line");
-    
+
     // Initialize with maximum capacity (MAX_LINES * 2 vertices, MAX_LINES * 2 indices)
     uint32 maxVertices = MAX_LINES * 2;
     uint32 maxIndices = MAX_LINES * 2;
@@ -302,7 +306,7 @@ void URenderer::InitializeLineBatch()
 
     // Create FMeshData for accumulating line data
     LineBatchData = new FMeshData();
-    
+
     // Load line shader
     LineShader = UResourceManager::GetInstance().Load<UShader>("ShaderLine.hlsl", EVertexLayoutType::PositionColor);
 }
@@ -310,9 +314,9 @@ void URenderer::InitializeLineBatch()
 void URenderer::BeginLineBatch()
 {
     if (!LineBatchData) return;
-    
+
     bLineBatchActive = true;
-    
+
     // Clear previous batch data
     LineBatchData->Vertices.clear();
     LineBatchData->Color.clear();
@@ -322,17 +326,17 @@ void URenderer::BeginLineBatch()
 void URenderer::AddLine(const FVector& Start, const FVector& End, const FVector4& Color)
 {
     if (!bLineBatchActive || !LineBatchData) return;
-    
+
     uint32 startIndex = static_cast<uint32>(LineBatchData->Vertices.size());
-    
+
     // Add vertices
     LineBatchData->Vertices.push_back(Start);
     LineBatchData->Vertices.push_back(End);
-    
+
     // Add colors
     LineBatchData->Color.push_back(Color);
     LineBatchData->Color.push_back(Color);
-    
+
     // Add indices for line (2 vertices per line)
     LineBatchData->Indices.push_back(startIndex);
     LineBatchData->Indices.push_back(startIndex + 1);
@@ -341,32 +345,32 @@ void URenderer::AddLine(const FVector& Start, const FVector& End, const FVector4
 void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVector>& EndPoints, const TArray<FVector4>& Colors)
 {
     if (!bLineBatchActive || !LineBatchData) return;
-    
+
     // Validate input arrays have same size
     if (StartPoints.size() != EndPoints.size() || StartPoints.size() != Colors.size())
         return;
-    
+
     uint32 startIndex = static_cast<uint32>(LineBatchData->Vertices.size());
-    
+
     // Reserve space for efficiency
     size_t lineCount = StartPoints.size();
     LineBatchData->Vertices.reserve(LineBatchData->Vertices.size() + lineCount * 2);
     LineBatchData->Color.reserve(LineBatchData->Color.size() + lineCount * 2);
     LineBatchData->Indices.reserve(LineBatchData->Indices.size() + lineCount * 2);
-    
+
     // Add all lines at once
     for (size_t i = 0; i < lineCount; ++i)
     {
         uint32 currentIndex = startIndex + static_cast<uint32>(i * 2);
-        
+
         // Add vertices
         LineBatchData->Vertices.push_back(StartPoints[i]);
         LineBatchData->Vertices.push_back(EndPoints[i]);
-        
+
         // Add colors
         LineBatchData->Color.push_back(Colors[i]);
         LineBatchData->Color.push_back(Colors[i]);
-        
+
         // Add indices for line (2 vertices per line)
         LineBatchData->Indices.push_back(currentIndex);
         LineBatchData->Indices.push_back(currentIndex + 1);
@@ -380,36 +384,36 @@ void URenderer::EndLineBatch(const FMatrix& ModelMatrix, const FMatrix& ViewMatr
         bLineBatchActive = false;
         return;
     }
-    
+
     // Efficiently update dynamic mesh data (no buffer recreation!)
     if (!DynamicLineMesh->UpdateData(LineBatchData, RHIDevice->GetDeviceContext()))
     {
         bLineBatchActive = false;
         return;
     }
-    
+
     // Set up rendering state
     UpdateConstantBuffer(ModelMatrix, ViewMatrix, ProjectionMatrix);
     PrepareShader(LineShader);
-    
+
     // Render using dynamic mesh
     if (DynamicLineMesh->GetCurrentVertexCount() > 0 && DynamicLineMesh->GetCurrentIndexCount() > 0)
     {
         UINT stride = sizeof(FVertexSimple);
         UINT offset = 0;
-        
+
         ID3D11Buffer* vertexBuffer = DynamicLineMesh->GetVertexBuffer();
         ID3D11Buffer* indexBuffer = DynamicLineMesh->GetIndexBuffer();
-        
+
         RHIDevice->GetDeviceContext()->IASetVertexBuffers(0, 1, &vertexBuffer, &stride, &offset);
         RHIDevice->GetDeviceContext()->IASetIndexBuffer(indexBuffer, DXGI_FORMAT_R32_UINT, 0);
         RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_LINELIST);
         RHIDevice->GetDeviceContext()->DrawIndexed(DynamicLineMesh->GetCurrentIndexCount(), 0, 0);
-        
+
         // 라인 렌더링에 대한 DrawCall 통계 추가
         URenderingStatsCollector::GetInstance().IncrementDrawCalls();
     }
-    
+
     bLineBatchActive = false;
 }
 
@@ -423,11 +427,11 @@ void URenderer::ResetRenderStateTracking()
 void URenderer::ClearLineBatch()
 {
     if (!LineBatchData) return;
-    
+
     LineBatchData->Vertices.clear();
     LineBatchData->Color.clear();
     LineBatchData->Indices.clear();
-    
+
     bLineBatchActive = false;
 }
 

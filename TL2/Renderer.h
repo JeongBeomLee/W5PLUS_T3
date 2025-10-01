@@ -18,7 +18,7 @@ public:
     ~URenderer();
 
 public:
-	void BeginFrame();
+    void BeginFrame();
 
     void PrepareShader(FShader& InShader);
 
@@ -52,13 +52,13 @@ public:
     void EndLineBatch(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix);
     void ClearLineBatch();
 
-	void EndFrame();
+    void EndFrame();
 
     void OMSetDepthStencilState(EComparisonFunc Func);
 
     URHIDevice* GetRHIDevice() { return RHIDevice; }
 private:
-	URHIDevice* RHIDevice;
+    URHIDevice* RHIDevice;
 
     // Batch Line Rendering System using UDynamicMesh for efficiency
     ULineDynamicMesh* DynamicLineMesh = nullptr;
@@ -66,7 +66,7 @@ private:
     UShader* LineShader = nullptr;
     bool bLineBatchActive = false;
     static const uint32 MAX_LINES = 10000;  // Maximum lines per batch
-    
+
     // 렌더링 통계를 위한 상태 추적
     UMaterial* LastMaterial = nullptr;
     UShader* LastShader = nullptr;

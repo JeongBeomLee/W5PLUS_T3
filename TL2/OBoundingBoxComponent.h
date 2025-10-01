@@ -13,7 +13,7 @@ struct FBox
 class UOBoundingBoxComponent :
     public UShapeComponent
 {
-    DECLARE_CLASS(UOBoundingBoxComponent,UShapeComponent)
+    DECLARE_CLASS(UOBoundingBoxComponent, UShapeComponent)
 public:
     UOBoundingBoxComponent();
 
@@ -21,7 +21,7 @@ public:
     void SetFromVertices(const std::vector<FVector>& Verts);
 
     // 월드 좌표계에서의 AABB 반환
-    FBox GetWorldBox() const;
+    FBox GetWorldBox();
 
     // 로컬 공간에서의 Extent (절반 크기)
     FVector GetExtent() const;
@@ -31,7 +31,7 @@ public:
 
     FBox GetWorldOBBFromAttachParent() const;
 
-	void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
+    void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) override;
     // Debug 렌더링용
     // void DrawDebug(ID3D11DeviceContext* DC);
 

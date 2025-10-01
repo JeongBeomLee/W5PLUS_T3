@@ -25,7 +25,7 @@ public:
     void SetFarClipPlane(float NewFar) { FarClip = NewFar; }
     void SetProjectionMode(ECameraProjectionMode Mode) { ProjectionMode = Mode; }
     void SetZoomFactor(float InZoomFactor) { ZooMFactor = InZoomFactor; };
-    
+
     float GetFOV() const { return FieldOfView; }
     float GetAspectRatio() const { return AspectRatio; }
     float GetNearClip() const { return NearClip; }
@@ -34,10 +34,10 @@ public:
     ECameraProjectionMode GetProjectionMode() const { return ProjectionMode; }
 
     // Matrices
-    FMatrix GetViewMatrix() const;
-    FMatrix GetProjectionMatrix() const;
-    FMatrix GetProjectionMatrix(float ViewportAspectRatio) const;
-    FMatrix GetProjectionMatrix(float ViewportAspectRatio, FViewport* Viewport) const;//직교 투영 화면 heig조정에 대응하기 위한 코드 
+    FMatrix GetViewMatrix();
+    FMatrix GetProjectionMatrix();
+    FMatrix GetProjectionMatrix(float ViewportAspectRatio);
+    FMatrix GetProjectionMatrix(float ViewportAspectRatio, FViewport* Viewport);//직교 투영 화면 heig조정에 대응하기 위한 코드 
     // Directions in world space
     FVector GetForward() const;
     FVector GetRight() const;

@@ -81,6 +81,10 @@ public:
     // 복제 시스템
     // ──────────────────────────────
     virtual UObject* Duplicate() override;
+protected:
+    virtual void RenderDetail() override;
+
+    void UpdateRelativeTransform();
 
 protected:
     FVector RelativeLocation{ 0,0,0 };
@@ -95,5 +99,6 @@ protected:
     // 로컬(부모 기준) 트랜스폼
     FTransform RelativeTransform;
 
-    void UpdateRelativeTransform();
+private:
+    bool bUniformScale = true;
 };

@@ -14,12 +14,15 @@ public:
 	void Update() override;
 	void RenderWidget() override;
 	void DeleteSelectedActor();
+	void DeleteSelectedComponent();
 
 	UActorTerminationWidget();
 	~UActorTerminationWidget() override;
 
 private:
 	AActor* SelectedActor;
+	USceneComponent* SelectedComponent;
 	UUIManager* UIManager; // UIManager 참조
+	USelectionManager* SelectionManager;
 	FString CachedActorName; // 액터 이름 캐시 (안전한 출력을 위해)
 };

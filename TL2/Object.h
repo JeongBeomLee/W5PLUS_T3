@@ -44,6 +44,7 @@ public:
     static void  operator delete(void* ptr, std::size_t) noexcept { CMemoryManager::Deallocate(ptr); }
 
     FString GetName();    // 원문
+    const FString GetName() const;
     FString GetComparisonName(); // lower-case
 public:
     uint32_t UUID;
