@@ -39,9 +39,7 @@ void UActorComponent::EndPlay()
 
 UObject* UActorComponent::Duplicate()
 {
-    UActorComponent* NewComponent = static_cast<UActorComponent*>(
-        ObjectFactory::NewObject(this->GetClass())
-    );
+    UActorComponent* NewComponent = static_cast<UActorComponent*>(ObjectFactory::NewObject(this->GetClass()));
 
     if (!NewComponent)
     {

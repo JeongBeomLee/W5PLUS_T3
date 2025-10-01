@@ -77,6 +77,11 @@ public:
     const TArray<USceneComponent*>& GetAttachChildren() const { return AttachChildren; }
     UWorld* GetWorld() { return AttachParent->GetWorld(); }
 
+    // ──────────────────────────────
+    // 복제 시스템
+    // ──────────────────────────────
+    virtual UObject* Duplicate() override;
+
 protected:
     FVector RelativeLocation{ 0,0,0 };
     FQuat   RelativeRotation;

@@ -37,7 +37,10 @@ public:
     void SetMaterialByUser(const uint32 InMaterialSlotIndex, const FString& InMaterialName);
 
     const TArray<FMaterialSlot>& GetMaterailSlots() const { return MaterailSlots; }
-    
+
+    // 복제 시스템
+    virtual UObject* Duplicate() override;
+
 protected:
     UStaticMesh* StaticMesh = nullptr;
     TArray<FMaterialSlot> MaterailSlots;

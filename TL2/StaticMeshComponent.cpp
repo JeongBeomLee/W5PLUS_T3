@@ -96,3 +96,22 @@ void UStaticMeshComponent::SetMaterialByUser(const uint32 InMaterialSlotIndex, c
 
     assert(MaterailSlots[InMaterialSlotIndex].bChangedByUser == true);
 }
+
+UObject* UStaticMeshComponent::Duplicate()
+{
+    // 부모 클래스의 Duplicate 호출 (Transform + Material 복사)
+    UStaticMeshComponent* NewComponent = static_cast<UStaticMeshComponent*>(Super_t::Duplicate());
+
+    if (!NewComponent)
+    {
+        return nullptr;
+    }
+
+    // StaticMesh 포인터 복사 (리소스는 공유)
+    NewComponent->StaticMesh = this->StaticMesh;
+
+    // MaterailSlots 복사
+    NewComponent->MaterailSlots = this->MaterailSlots;
+
+    return NewComponent;
+}

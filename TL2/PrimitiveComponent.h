@@ -23,6 +23,9 @@ public:
 
     virtual void Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj) {}
 
+    // 복제 시스템
+    virtual UObject* Duplicate() override;
+
 protected:
     UMaterial* Material = nullptr;
 };

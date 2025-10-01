@@ -29,3 +29,19 @@ void UPrimitiveComponent::Serialize(bool bIsLoading, FPrimitiveData& InOut)
         InOut.Scale = WT.Scale3D;
     }
 }
+
+UObject* UPrimitiveComponent::Duplicate()
+{
+    // 부모 클래스의 Duplicate 호출 (Transform 복사)
+    UPrimitiveComponent* NewComponent = static_cast<UPrimitiveComponent*>(Super_t::Duplicate());
+
+    if (!NewComponent)
+    {
+        return nullptr;
+    }
+
+    // Material 포인터 복사 (리소스는 공유)
+    NewComponent->Material = this->Material;
+
+    return NewComponent;
+}

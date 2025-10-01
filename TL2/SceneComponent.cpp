@@ -256,3 +256,29 @@ void USceneComponent::UpdateRelativeTransform()
 {
     RelativeTransform = FTransform(RelativeLocation, RelativeRotation, RelativeScale);
 }
+
+// ──────────────────────────────
+// 복제 시스템
+// ──────────────────────────────
+UObject* USceneComponent::Duplicate()
+{
+    // 부모 클래스의 Duplicate 호출 (기본 속성 복사)
+    //USceneComponent* NewComponent = static_cast<USceneComponent*>(UActorComponent::Duplicate());
+    USceneComponent* NewComponent = static_cast<USceneComponent*>(Super_t::Duplicate());
+
+    if (!NewComponent)
+    {
+        return nullptr;
+    }
+
+    // Transform 정보 복사
+    NewComponent->RelativeLocation = this->RelativeLocation;
+    NewComponent->RelativeRotation = this->RelativeRotation;
+    NewComponent->RelativeScale = this->RelativeScale;
+    NewComponent->UpdateRelativeTransform();
+
+    // AttachParent와 AttachChildren은 복제 후 외부에서 설정
+    // (계층 구조 재구성은 Actor 레벨에서 처리)
+
+    return NewComponent;
+}
