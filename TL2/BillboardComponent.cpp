@@ -92,7 +92,6 @@ void UBillboardComponent::RenderDetail()
 		}
 		// 읽기 전용 현재 텍스처 이름 표시
 		// %s는 char pointer 필요
-		IconPath = "필요";
 		ImGui::Text("Current: %s", IconPath.c_str());
 
 		ImGui::TreePop();
