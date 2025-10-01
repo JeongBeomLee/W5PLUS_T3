@@ -221,10 +221,27 @@ void USceneComponent::RenderDetail()
         }
 
         // Rotation 편집 (Euler angles)
-        FVector Euler = RelativeTransform.Rotation.ToEulerDegree();
-        if (ImGui::DragFloat3("Rotation", &Euler.X, 0.5f))
+        static bool bFirstTime = true;
+        if (bFirstTime)
         {
-            SetRelativeRotation(FQuat::MakeFromEuler(Euler));
+            LastEulerRotation = RelativeTransform.Rotation.ToEulerDegree();
+            bFirstTime = false;
+        }
+
+        FVector CurrentEuler = LastEulerRotation;
+        if (ImGui::DragFloat3("Rotation", &CurrentEuler.X, 0.5f))
+        {
+            // 증가분 계산
+            FVector DeltaEuler = CurrentEuler - LastEulerRotation;
+
+            // 기존 쿼터니언에 증가분 회전 적용
+            FQuat DeltaQuat = FQuat::MakeFromEuler(DeltaEuler);
+            FQuat NewRotation = DeltaQuat * RelativeTransform.Rotation;
+
+            SetRelativeRotation(NewRotation);
+
+            // 마지막 오일러 값 업데이트
+            LastEulerRotation = CurrentEuler;
         }
 
         // Scale 편집
