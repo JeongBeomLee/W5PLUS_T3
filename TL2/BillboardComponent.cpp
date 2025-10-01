@@ -23,14 +23,88 @@ UBillboardComponent::UBillboardComponent()
 
 UBillboardComponent::~UBillboardComponent() {}
 
-TArray<FBillboardVertexInfo_GPU> UBillboardComponent::CreateVertices(const FVector& StartPos)
+void UBillboardComponent::RenderDetail()
 {
-	return TArray<FBillboardVertexInfo_GPU>();
+	UMeshComponent::RenderDetail();
+
+	if (ImGui::TreeNode("Sprite"))
+	{
+		auto& RM = UResourceManager::GetInstance();
+
+		// 1) 'Icon'이름을 포함하는 텍스처 풀 목록 만들기
+		const TArray<FString> AllTexNames = RM.GetAllFilePaths<UTexture>();
+		static TArray<FString> IconTexNames;
+		IconTexNames.clear();
+		for (const FString& Name : AllTexNames)
+		{
+			if (Name.find("Icon") != std::string::npos)
+			{
+				IconTexNames.push_back(Name);
+			}
+		}
+
+		// 2) ImGui용 char* 배열
+		static TArray<const char*> Items;
+		Items.clear();
+		Items.reserve(IconTexNames.size());
+		for (const FString& S : IconTexNames)
+			Items.push_back(S.c_str());
+
+		// 3) 현재 선택 인덱스 유지
+		static int SelectedIdx = -1;
+
+		// 현재 머티리얼의 텍스처 이름으로 동기화(처음 1회 혹은 버튼으로)
+		if (SelectedIdx < 0 && Material && Material->GetTexture())
+		{
+			const FString CurrentName = Material->GetTexture()->GetName(); // GetName()은 엔진 쪽에 맞춰 조정
+			for (int i = 0; i < static_cast<int>(IconTexNames.size()); ++i)
+			{
+				if (IconTexNames[i] == CurrentName)
+				{
+					SelectedIdx = i;
+					break;
+				}
+			}
+		}
+
+		ImGui::SetNextItemWidth(280);
+		ImGui::Combo("Icon Texture", &SelectedIdx,
+			Items.data(), static_cast<int>(Items.size()));
+
+		ImGui::SameLine();
+		if (ImGui::Button("Apply Texture"))
+		{
+			if (SelectedIdx >= 0 && SelectedIdx < static_cast<int>(IconTexNames.size()))
+			{
+				const FString& TexPath = IconTexNames[SelectedIdx];
+				if (UTexture* NewTex = RM.Load<UTexture>(TexPath))
+				{
+					if (!Material)
+					{
+						Material = NewObject<UMaterial>();
+						RM.Add<UMaterial>("IconBillboard", Material);
+					}
+					Material->SetTexture(NewTex);
+					UE_LOG("Applied Icon Texture: %s", TexPath.c_str());
+				}
+			}
+		}
+
+		// 읽기 전용 현재 텍스처 이름 표시
+		const char* CurrentTexName = "(none)";
+		if (Material && Material->GetTexture())
+			CurrentTexName = Material->GetTexture()->GetName().c_str(); // 엔진에 맞게
+
+		ImGui::Text("Current: %s", CurrentTexName);
+
+		ImGui::TreePop();
+	}
 }
 
 void UBillboardComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
-	Material->Load("Pawn_64x.dds", Renderer->GetRHIDevice()->GetDevice());
+	// jft : change hard coded path
+	Material->Load("Editor/Icon/Pawn_64x.dds", Renderer->GetRHIDevice()->GetDevice());
 	AActor* Owner = GetOwner();
 	UWorld* World = Owner->GetWorld();	
 	ACameraActor* CameraActor = World->GetCameraActor();

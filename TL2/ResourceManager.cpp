@@ -439,8 +439,8 @@ FString& UResourceManager::GetProperShader(const FString& InTextureName)
 void UResourceManager::InitTexToShaderMap()
 {
     TextureToShaderMap["TextBillboard.dds"] = "TextBillboard.hlsl";
-    // jft
-    TextureToShaderMap["Pawn_64x.dds"] = "TextBillboard.hlsl";
+    // jft : change hard coded path
+    TextureToShaderMap["Editor/Icon/Pawn_64x.dds"] = "TextBillboard.hlsl";
 }
 
 
@@ -453,9 +453,19 @@ void UResourceManager::CreateTextBillboardTexture()
 
 void UResourceManager::CreateIconBillboardTexture()
 {
+     // jft : change hard coded path
+    // jft : 이딴 식으로 만들지 말기
     UTexture* IconBillboardTexture = NewObject<UTexture>();
-    IconBillboardTexture->Load("Pawn_64x.dds", Device);
-    Add<UTexture>("Pawn_64x.dds", IconBillboardTexture);
+    IconBillboardTexture->Load("Editor/Icon/Pawn_64x.dds", Device);
+    Add<UTexture>("Editor/Icon/Pawn_64x.dds", IconBillboardTexture);
+
+    UTexture* IconBillboardTexture2 = NewObject<UTexture>();
+    IconBillboardTexture2->Load("Editor/Icon/PointLight_64x.dds", Device);
+    Add<UTexture>("Editor/Icon/PointLight_64x.dds", IconBillboardTexture2);
+
+    UTexture* IconBillboardTexture3 = NewObject<UTexture>();
+    IconBillboardTexture3->Load("Editor/Icon/SpotLight_64x.dds", Device);
+    Add<UTexture>("Editor/Icon/SpotLight_64x.dds", IconBillboardTexture3);
 }
 
 
