@@ -217,6 +217,7 @@ void FViewportClient::MouseButtonDown(FViewport* Viewport, int32 X, int32 Y, int
 	FVector2D ViewportMousePos(static_cast<float>(X) + ViewportOffset.X, static_cast<float>(Y) + ViewportOffset.Y);
 
 	AActor* PickedActor = nullptr;
+	USceneComponent* PickedComponent = nullptr;
 	TArray<AActor*> AllActors = World->GetActors();
 	AGizmoActor* GizmoActor = World->GetGizmoActor();
 
@@ -233,12 +234,24 @@ void FViewportClient::MouseButtonDown(FViewport* Viewport, int32 X, int32 Y, int
 		{
 			PickedActor->SetIsPicked(false);
 		}
-		PickedActor = CPickingSystem::PerformGlobalBVHPicking(AllActors, Camera, ViewportMousePos, ViewportSize, ViewportOffset, PickingAspectRatio, Viewport);
-
-		if (PickedActor)
+		PickedComponent = CPickingSystem::PerformGlobalBVHPicking(AllActors, Camera, ViewportMousePos, ViewportSize, ViewportOffset, PickingAspectRatio, Viewport);
+		
+		if (PickedComponent)
 		{
+			PickedActor = PickedComponent->GetOwner();
 			PickedActor->SetIsPicked(true);
-			if (PickedActor != USelectionManager::GetInstance().GetSelectedActor())
+
+			//선택된 액터와 같으면 컴포넌트 선택으로 취급
+			if (PickedActor == USelectionManager::GetInstance().GetSelectedActor())
+			{		
+				USelectionManager::GetInstance().SelectComponent(PickedComponent);
+				if (World->GetGizmoActor())
+				{
+					World->GetGizmoActor()->SetTargetComponent(PickedComponent);
+					World->GetGizmoActor()->SetActorLocation(PickedComponent->GetWorldLocation());
+				}
+			}
+			else
 			{
 				USelectionManager::GetInstance().SelectActor(PickedActor);
 				if (World->GetGizmoActor())

@@ -249,7 +249,7 @@ void AGizmoActor::SetSpaceWorldMatrix(EGizmoSpace NewSpace, USceneComponent* Pic
 		// 타겟 액터 회전 가져오기
 		RootComponent->SetRelativeLocation(PickedComponent->GetWorldLocation());
 
-		FQuat TargetRot = PickedComponent->GetRelativeRotation();
+		FQuat TargetRot = PickedComponent->GetWorldRotation();
 
 		//Arrow = 모델이 -y를 바라보고 있음
 		if (ArrowX) ArrowX->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, 0, 90)));

@@ -80,6 +80,14 @@ FVector USceneComponent::GetWorldLocation()
     }
     return RelativeTransform.Translation;
 }
+FQuat USceneComponent::GetWorldRotation()
+{
+    if (AttachParent != nullptr)
+    {
+        return RelativeTransform.Rotation * AttachParent->GetWorldRotation();
+    }
+    return RelativeTransform.Rotation;
+}
 
 void USceneComponent::SetRelativeTransform(const FTransform& InRelativeTransform)
 {
@@ -100,33 +108,15 @@ void USceneComponent::TransformDirty()
 }
 FVector USceneComponent::GetForward()
 {
-    if (AttachParent != nullptr)
-    {
-        const FMatrix& ParentWorldMatrix = AttachParent->GetWorldMatrix();
-        FMatrix CurRotMatrix = RelativeTransform.Rotation.ToMatrix() * ParentWorldMatrix;
-        return CurRotMatrix.GetForward();
-    }
-    return RelativeTransform.Rotation.GetForward();
+    return GetWorldRotation().GetForward();
 }
 FVector USceneComponent::GetRight()
 {
-    if (AttachParent != nullptr)
-    {
-        const FMatrix& ParentWorldMatrix = AttachParent->GetWorldMatrix();
-        FMatrix CurRotMatrix = RelativeTransform.Rotation.ToMatrix() * ParentWorldMatrix;
-        return CurRotMatrix.GetRight();
-    }
-    return RelativeTransform.Rotation.GetRight();
+    return GetWorldRotation().GetRight();
 }
 FVector USceneComponent::GetUp()
 {
-    if (AttachParent != nullptr)
-    {
-        const FMatrix& ParentWorldMatrix = AttachParent->GetWorldMatrix();
-        FMatrix CurRotMatrix = RelativeTransform.Rotation.ToMatrix() * ParentWorldMatrix;
-        return CurRotMatrix.GetUp();
-    }
-    return RelativeTransform.Rotation.GetUp();
+    return GetWorldRotation().GetUp();
 }
 const FMatrix& USceneComponent::GetWorldMatrix()
 {

@@ -105,7 +105,7 @@ public:
                                             float ViewportAspectRatio, FViewport* Viewport);
 
     // Global BVH만 사용하는 피킹
-    static AActor* PerformGlobalBVHPicking(const TArray<AActor*>& Actors,
+    static USceneComponent* PerformGlobalBVHPicking(const TArray<AActor*>& Actors,
                                           ACameraActor* Camera,
                                           const FVector2D& ViewportMousePos,
                                           const FVector2D& ViewportSize,
@@ -113,7 +113,7 @@ public:
                                           float ViewportAspectRatio, FViewport* Viewport);
 
     /** === 헬퍼 함수들 === */
-    static bool CheckActorPicking(AActor* Actor, const FRay& Ray, float& OutDistance);
+    static bool CheckActorPicking(AActor* Actor, USceneComponent*& OutComponent, const FRay& Ray, float& OutDistance);
 
     // 거리 기반 적응형 조기 종료 임계값
     static float GetAdaptiveThreshold(float cameraDistance);

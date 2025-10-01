@@ -486,5 +486,6 @@ bool FBVH::IntersectActor(AActor* Actor, const FVector& RayOrigin, const FVector
     Ray.Origin = RayOrigin;
     Ray.Direction = RayDirection;
 
-    return CPickingSystem::CheckActorPicking(Actor, Ray, OutDistance);
+    return false;
+    //return CPickingSystem::CheckActorPicking(Actor, Ray, OutDistance);
 }

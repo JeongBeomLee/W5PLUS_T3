@@ -37,6 +37,7 @@ public:
 
     void SetWorldLocation(const FVector& WorldLocation);
     FVector GetWorldLocation();
+    FQuat GetWorldRotation();
     void SetRelativeTransform(const FTransform& InRelativeTransform);
     FTransform GetRelativeTransform()const;
 
