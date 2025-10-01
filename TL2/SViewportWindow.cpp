@@ -372,6 +372,12 @@ void SViewportWindow::StartPIE()
 	// ViewportClient를 PIE 월드로 전환
 	ViewportClient->SetWorld(PIEWorld);
 
+	// 현재 View Mode 저장
+	SavedViewModeIndex = ViewportClient->GetViewModeIndex();
+
+	// Lit 모드로 강제 전환
+	ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Lit);
+
 	// PIE 월드의 모든 액터 BeginPlay 호출
 	PIEWorld->InitializeActorsForPlay();
 
@@ -390,6 +396,9 @@ void SViewportWindow::EndPIE()
 	if (EditorWorld && ViewportClient)
 	{
 		ViewportClient->SetWorld(EditorWorld);
+
+		// 저장된 View Mode 복구
+		ViewportClient->SetViewModeIndex(SavedViewModeIndex);
 	}
 
 	// PIE 종료 요청 (다음 프레임 시작 시 정리됨)

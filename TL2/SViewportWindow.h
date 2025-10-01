@@ -42,6 +42,7 @@ private:
     UWorld* PIEWorld = nullptr;
     UWorld* EditorWorld = nullptr;
     float PIEBorderAlpha = 0.0f;  // 테두리 페이드 인/아웃용 알파값 (0.0 ~ 1.0)
+    EViewModeIndex SavedViewModeIndex = EViewModeIndex::VMI_Lit;  // PIE 이전 View Mode 저장
 
     EViewportType ViewportType;
     FName ViewportName;

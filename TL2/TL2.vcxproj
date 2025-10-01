@@ -256,6 +256,7 @@
     <ClCompile Include="SDetailsWindow.cpp" />
     <ClCompile Include="ShapeComponent.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SimpleRotatingMovementComponent.cpp" />
     <ClCompile Include="SMultiViewportWindow.cpp" />
     <ClCompile Include="SpatialDataStructure.cpp" />
     <ClCompile Include="SSplitter.cpp" />
@@ -396,6 +397,7 @@
     <ClInclude Include="SDetailsWindow.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="ShapeComponent.h" />
+    <ClInclude Include="SimpleRotatingMovementComponent.h" />
     <ClInclude Include="SMultiViewportWindow.h" />
     <ClInclude Include="SpatialDataStructure.h" />
     <ClInclude Include="Sphere.h" />

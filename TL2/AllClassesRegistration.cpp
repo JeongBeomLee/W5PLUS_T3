@@ -35,6 +35,7 @@
 #include "TextRenderComponent.h"
 #include "BillboardComponent.h"
 #include "AABoundingBoxComponent.h"
+#include "SimpleRotatingMovementComponent.h"
 #include "StaticMesh.h"
 #include "Shader.h"
 #include "Texture.h"
@@ -61,6 +62,7 @@ IMPLEMENT_CLASS(UStaticMeshComponent)
 IMPLEMENT_CLASS(UCameraComponent)
 IMPLEMENT_CLASS(UAABoundingBoxComponent)
 IMPLEMENT_CLASS(UShapeComponent)
+IMPLEMENT_CLASS(USimpleRotatingMovementComponent)
 
 IMPLEMENT_CLASS(AActor)
 IMPLEMENT_CLASS(ACameraActor)
