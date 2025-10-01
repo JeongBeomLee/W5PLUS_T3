@@ -390,7 +390,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 				if (!Component) continue;
 				if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
 					if (!ActorComp->IsActive()) continue;
-					if (Cast<UTextRenderComponent>(Component) && IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText)) continue;
+					if (Cast<UTextRenderComponent>(Component) && !IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText)) continue;
 					if (Cast<UAABoundingBoxComponent>(Component) && !IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes)) continue;
 
 				if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))

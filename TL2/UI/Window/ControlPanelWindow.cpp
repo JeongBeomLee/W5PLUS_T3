@@ -7,6 +7,8 @@
 #include "../Widget/PrimitiveSpawnWidget.h"
 #include "../Widget/SceneIOWidget.h"
 #include "../Widget/SceneManagerWidget.h"
+#include "../Widget/ShowFlagWidget.h"
+
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
 
@@ -29,6 +31,10 @@ UControlPanelWindow::UControlPanelWindow()
 
 	Config.UpdateWindowFlags();
 	SetConfig(Config);
+
+	UShowFlagWidget* ShowFlagWidget = NewObject<UShowFlagWidget>();
+	ShowFlagWidget->Initialize();
+	AddWidget(ShowFlagWidget);
 
 	UFPSWidget* FPSWidget = NewObject<UFPSWidget>();
 	FPSWidget->Initialize();
