@@ -182,12 +182,19 @@ UObject* AActor::Duplicate()
         return nullptr;
     }
 
-    // 기본 프로퍼티 복사 (간소화된 얕은 복사)
+    // 기본 프로퍼티 복사
     NewActor->Name = this->Name;
     NewActor->bIsPicked = false; // PIE에서는 선택 해제
     NewActor->bCanEverTick = this->bCanEverTick;
     NewActor->bHiddenInGame = this->bHiddenInGame;
     NewActor->bTickInEditor = this->bTickInEditor;
+
+    // 원본(this)의 컴포넌트를 NewActor에 임시 설정하여 DuplicateSubObjects가 복제할 수 있도록 함
+    TSet<UActorComponent*> OriginalComponents = this->Components;
+    USceneComponent* OriginalRootComponent = this->RootComponent;
+
+    NewActor->Components = OriginalComponents;
+    NewActor->RootComponent = OriginalRootComponent;
 
     // 서브 오브젝트(Components) 복제
     NewActor->DuplicateSubObjects();

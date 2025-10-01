@@ -13,11 +13,16 @@ AStaticMeshActor::AStaticMeshActor()
     CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
     AddComponent(CollisionComponent);
 	CollisionComponent->SetupAttachment(RootComponent);
+
+    // 회전 컴포넌트 생성
+    RotatingMovementComponent = CreateDefaultSubobject<USimpleRotatingMovementComponent>(FName("RotatingMovement"));
+    AddComponent(RotatingMovementComponent);
 }
 
 void AStaticMeshActor::Tick(float DeltaTime)
 {
-    if(bIsPicked&& CollisionComponent)
+	Super_t::Tick(DeltaTime);
+	if (bIsPicked && CollisionComponent)
     CollisionComponent->SetFromVertices(StaticMeshComponent->GetStaticMesh()->GetStaticMeshAsset()->Vertices);
 }
 
@@ -56,26 +61,12 @@ UObject* AStaticMeshActor::Duplicate()
 
     // 기본 프로퍼티 복사
     NewActor->Name = this->Name;
-    NewActor->bIsPicked = false;  // 복제본은 선택 해제
+    NewActor->bIsPicked = false;
     NewActor->bCanEverTick = this->bCanEverTick;
     NewActor->bHiddenInGame = this->bHiddenInGame;
     NewActor->bTickInEditor = this->bTickInEditor;
 
-    // 생성자에서 만든 NewActor의 기본 컴포넌트 제거
-    if (NewActor->StaticMeshComponent)
-    {
-        NewActor->Components.erase(NewActor->StaticMeshComponent);
-        ObjectFactory::DeleteObject(NewActor->StaticMeshComponent);
-        NewActor->StaticMeshComponent = nullptr;
-    }
-    if (NewActor->CollisionComponent)
-    {
-        NewActor->Components.erase(NewActor->CollisionComponent);
-        ObjectFactory::DeleteObject(NewActor->CollisionComponent);
-        NewActor->CollisionComponent = nullptr;
-    }
-
-    // 원본(this)의 컴포넌트를 NewActor에 임시 설정하여 DuplicateSubObjects가 복제할 수 있도록 함
+    // 원본(this)의 컴포넌트를 NewActor에 임시 설정
     TSet<UActorComponent*> OriginalComponents = this->Components;
     USceneComponent* OriginalRootComponent = this->RootComponent;
 
@@ -91,61 +82,14 @@ UObject* AStaticMeshActor::Duplicate()
 // AStaticMeshActor 서브 오브젝트 복제
 void AStaticMeshActor::DuplicateSubObjects()
 {
-    // 이 시점에서 Components는 원본 액터의 컴포넌트를 가리키고 있음 (Duplicate()에서 설정됨)
+    // 부모 클래스의 DuplicateSubObjects 호출 (컴포넌트 복제 및 계층 구조 복원)
+    Super_t::DuplicateSubObjects();
 
-    // 컴포넌트 복제 및 매핑 테이블 생성
-    TSet<UActorComponent*> OriginalComponents = Components;
-    Components.clear();
+    // AStaticMeshActor 전용 멤버 포인터 재설정
+    StaticMeshComponent = nullptr;
+    CollisionComponent = nullptr;
+    RotatingMovementComponent = nullptr;
 
-    // 원본 -> 복제본 매핑
-    TMap<UActorComponent*, UActorComponent*> ComponentMap;
-
-    for (UActorComponent* OriginalComponent : OriginalComponents)
-    {
-        if (OriginalComponent)
-        {
-            UActorComponent* NewComp = Cast<UActorComponent>(OriginalComponent->Duplicate());
-            if (NewComp)
-            {
-                NewComp->SetOwner(this);
-                // AddComponent 호출하지 않음 - 계층 구조를 나중에 복원하므로
-                Components.insert(NewComp);
-                ComponentMap[OriginalComponent] = NewComp;
-            }
-        }
-    }
-
-    // SceneComponent 계층 구조 복원
-    for (const auto& Pair : ComponentMap)
-    {
-        USceneComponent* OriginalSceneComponent = Cast<USceneComponent>(Pair.first);
-        USceneComponent* NewSceneComponent = Cast<USceneComponent>(Pair.second);
-
-        if (OriginalSceneComponent && NewSceneComponent)
-        {
-            USceneComponent* OriginalParent = OriginalSceneComponent->GetAttachParent();
-            if (OriginalParent && ComponentMap.find(OriginalParent) != ComponentMap.end())
-            {
-                USceneComponent* NewParent = Cast<USceneComponent>(ComponentMap[OriginalParent]);
-                if (NewParent)
-                {
-                    NewSceneComponent->SetupAttachment(NewParent);
-                }
-            }
-        }
-    }
-
-    // RootComponent 설정
-    if (RootComponent)
-    {
-        USceneComponent* OriginalRootComponent = RootComponent;
-        if (ComponentMap.find(OriginalRootComponent) != ComponentMap.end())
-        {
-            RootComponent = Cast<USceneComponent>(ComponentMap[OriginalRootComponent]);
-        }
-    }
-
-    // AStaticMeshActor 전용 멤버 포인터 설정
     for (UActorComponent* Comp : Components)
     {
         if (!StaticMeshComponent)
@@ -155,6 +99,10 @@ void AStaticMeshActor::DuplicateSubObjects()
         if (!CollisionComponent)
         {
             CollisionComponent = Cast<UAABoundingBoxComponent>(Comp);
+        }
+        if (!RotatingMovementComponent)
+        {
+            RotatingMovementComponent = Cast<USimpleRotatingMovementComponent>(Comp);
         }
     }
 }
