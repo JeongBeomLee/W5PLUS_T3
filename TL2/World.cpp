@@ -126,7 +126,7 @@ static void DebugRTTI_UObject(UObject* Obj, const char* Title)
 
 void UWorld::Initialize()
 {
-	FObjManager::Preload();
+	//FObjManager::Preload();
 
 	// 새 씬 생성
 	CreateNewScene();
@@ -389,7 +389,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
 			//Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
 
-			for (UActorComponent* Component : Actor->GetComponents())
+			for (UActorComponent* Component : Actor->GetAllComponents())
 			{
 				if (!Component) continue;
 				if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
@@ -416,7 +416,7 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 		if (Cast<AGridActor>(EngineActor) && !IsShowFlagEnabled(EEngineShowFlags::SF_Grid))
 			continue;
 
-		for (UActorComponent* Component : EngineActor->GetComponents())
+		for (UActorComponent* Component : EngineActor->GetAllComponents())
 		{
 			if (!Component) continue;
 			if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))

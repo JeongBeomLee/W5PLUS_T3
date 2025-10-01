@@ -1100,214 +1100,60 @@ bool CPickingSystem::CheckGizmoComponentPicking(UStaticMeshComponent* Component,
     return false;
 }
 
-bool CPickingSystem::CheckActorPicking(const AActor* Actor, const FRay& Ray, float& OutDistance)
+bool CPickingSystem::CheckActorPicking(AActor* Actor, const FRay& Ray, float& OutDistance)
 {
     if (!Actor) return false;
 
     // 스태틱 메시 액터인지 확인
-    const AStaticMeshActor* StaticMeshActor = Cast<const AStaticMeshActor>(Actor);
-    if (StaticMeshActor)
+    const TSet<UStaticMeshComponent*> StaticMeshComponents = Actor->GetComponents<UStaticMeshComponent>();
+    for (UStaticMeshComponent* MeshComponent : StaticMeshComponents)
     {
-        // UStaticMesh 가져오기
-        const UStaticMeshComponent* StaticMeshComponent = StaticMeshActor->GetStaticMeshComponent();
-        const UStaticMesh* StaticMesh = StaticMeshComponent ? StaticMeshComponent->GetStaticMesh() : nullptr;
-        if (StaticMesh)
+        UStaticMesh* StaticMesh = MeshComponent->GetStaticMesh();
+        if (StaticMesh == nullptr)
         {
-            FNarrowPhaseBVHNode* MeshBVH = StaticMesh->GetMeshBVH();
-            if (MeshBVH)
-            {
-                // 월드 → 로컬 변환
-                FMatrix InvWorldMatrix = Actor->GetWorldMatrix().InverseAffine();
-
-                FRay LocalRay;
-                {
-                    // Origin (위치, w=1)
-                    FVector4 Origin4(Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z, 1.0f);
-                    FVector4 TransformedOrigin4 = Origin4 * InvWorldMatrix;
-                    LocalRay.Origin = FVector(TransformedOrigin4.X, TransformedOrigin4.Y, TransformedOrigin4.Z);
-
-                    // Direction (벡터, w=0)
-                    FVector4 Direction4(Ray.Direction.X, Ray.Direction.Y, Ray.Direction.Z, 0.0f);
-                    FVector4 TransformedDirection4 = Direction4 * InvWorldMatrix;
-                    LocalRay.Direction = FVector(TransformedDirection4.X, TransformedDirection4.Y, TransformedDirection4.Z);
-                    LocalRay.Direction.Normalize();
-                }
-
-                float ClosestLocalHitDist = FLT_MAX;
-                if (IntersectTriangleBVH(LocalRay, MeshBVH, StaticMesh->GetStaticMeshAsset(), ClosestLocalHitDist))
-                {
-                    // 로컬 히트 포인트
-                    FVector LocalHitPoint = LocalRay.Origin + LocalRay.Direction * ClosestLocalHitDist;
-
-                    // 로컬 → 월드 변환 (row-vector 규약: v * WorldMatrix)
-                    FMatrix WorldMatrix = Actor->GetWorldMatrix();
-                    FVector4 LocalHit4(LocalHitPoint.X, LocalHitPoint.Y, LocalHitPoint.Z, 1.0f);
-                    FVector4 WorldHit4 = LocalHit4 * WorldMatrix;
-                    FVector WorldHitPoint(WorldHit4.X, WorldHit4.Y, WorldHit4.Z);
-
-                    // 월드 거리 계산
-                    OutDistance = (WorldHitPoint - Ray.Origin).Size();
-                    return true;
-                }
-                return false;
-            }
-            
-
-
-            //FNarrowPhaseBVHNode* MeshBVH = StaticMesh->GetMeshBVH();
-            //if (MeshBVH)
-            //{
-            //    // 월드 공간 광선을 액터의 로컬 공간으로 변환
-            //    FMatrix InvWorldMatrix = Actor->GetWorldMatrix().InverseAffine();
-
-            //    FRay LocalRay;
-            //    // Origin은 위치이므로 w=1.0f로 변환
-            //    FVector4 Origin4(Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z, 1.0f);
-            //    FVector4 TransformedOrigin4 = Origin4 * InvWorldMatrix;
-            //    LocalRay.Origin = FVector(TransformedOrigin4.X, TransformedOrigin4.Y,
-            //        TransformedOrigin4.Z);
-
-            //    // Direction은 방향이므로 w=0.0f로 변환
-            //    FVector4 Direction4(Ray.Direction.X, Ray.Direction.Y, Ray.Direction.Z,
-            //        0.0f);
-            //    FVector4 TransformedDirection4 = Direction4 * InvWorldMatrix;
-            //    LocalRay.Direction = FVector(TransformedDirection4.X, TransformedDirection4.Y,
-            //        TransformedDirection4.Z);
-            //    LocalRay.Direction.Normalize();
-
-            //    float ClosestLocalHitDist = FLT_MAX; // 가장 가까운 거리를 무한대로 초기화
-
-            //    // 6. 헬퍼 함수를 호출하여 BVH와 정밀 충돌 검사 수행
-            //    if (IntersectTriangleBVH(LocalRay, MeshBVH, StaticMesh->GetStaticMeshAsset(),
-            //        ClosestLocalHitDist))
-            //    {
-            //        // 7. 충돌했다면, 로컬 공간 거리를 월드 공간 거리로 변환하여 최종 결과로 반환
-            //        // (주의: 액터의 스케일에 따라 거리가 달라지므로, 스케일 값을 곱해 보정)
-            //        OutDistance = ClosestLocalHitDist * Actor->GetActorScale().X; // 균일 스케일 가정
-            //        return true;
-            //    }
-
-            //    // BVH가 있지만 충돌하지 않았다면, 더 검사할 필요 없이 실패 처리
-            //    return false;
-            //}
+            continue;
         }
-        
+
+        FNarrowPhaseBVHNode* MeshBVH = StaticMesh->GetMeshBVH();
+        if (MeshBVH)
+        {
+            // 월드 → 로컬 변환
+            FMatrix InvWorldMatrix = MeshComponent->GetWorldMatrix().InverseAffine();
+
+            FRay LocalRay;
+            {
+                // Origin (위치, w=1)
+                FVector4 Origin4(Ray.Origin.X, Ray.Origin.Y, Ray.Origin.Z, 1.0f);
+                FVector4 TransformedOrigin4 = Origin4 * InvWorldMatrix;
+                LocalRay.Origin = FVector(TransformedOrigin4.X, TransformedOrigin4.Y, TransformedOrigin4.Z);
+
+                // Direction (벡터, w=0)
+                FVector4 Direction4(Ray.Direction.X, Ray.Direction.Y, Ray.Direction.Z, 0.0f);
+                FVector4 TransformedDirection4 = Direction4 * InvWorldMatrix;
+                LocalRay.Direction = FVector(TransformedDirection4.X, TransformedDirection4.Y, TransformedDirection4.Z);
+                LocalRay.Direction.Normalize();
+            }
+
+            float ClosestLocalHitDist = FLT_MAX;
+            if (IntersectTriangleBVH(LocalRay, MeshBVH, StaticMesh->GetStaticMeshAsset(), ClosestLocalHitDist))
+            {
+                // 로컬 히트 포인트
+                FVector LocalHitPoint = LocalRay.Origin + LocalRay.Direction * ClosestLocalHitDist;
+
+                // 로컬 → 월드 변환 (row-vector 규약: v * WorldMatrix)
+                FMatrix WorldMatrix = Actor->GetWorldMatrix();
+                FVector4 LocalHit4(LocalHitPoint.X, LocalHitPoint.Y, LocalHitPoint.Z, 1.0f);
+                FVector4 WorldHit4 = LocalHit4 * WorldMatrix;
+                FVector WorldHitPoint(WorldHit4.X, WorldHit4.Y, WorldHit4.Z);
+
+                // 월드 거리 계산
+                OutDistance = (WorldHitPoint - Ray.Origin).Size();
+                return true;
+            }
+        }
     }
+    OutDistance = -1;
     return false;
-    //// 스태틱 메시 액터인 경우 AABB 컬리전 검사 우선 수행
-    //if (const AStaticMeshActor* StaticMeshActor = Cast<const AStaticMeshActor>(Actor))
-    //{
-    //    // AABB 컴포넌트 찾기
-    //    for (auto Component : StaticMeshActor->GetComponents())
-    //    {
-    //        if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(Component))
-    //        {
-    //            // AABB 검사
-    //            FBound WorldBound = AABBComponent->GetWorldBoundFromCube();
-    //            float distance;
-    //            if (WorldBound.RayIntersects(Ray.Origin, Ray.Direction, distance))
-    //            {
-    //                OutDistance = distance;
-    //                //return true;
-    //            }
-    //            break; // AABB 컴포넌트를 찾았으면 더 이상 찾지 않음
-    //        }
-    //    }
-    //    // AABB 검사에서 히트되지 않으면 false 반환 (메시 검사는 하지 않음)
-    //  //  return false;
-    //}
-
-    //// 액터의 모든 SceneComponent 순회
-    //for (auto SceneComponent : Actor->GetComponents())
-    //{
-    //    if (UStaticMeshComponent* StaticMeshComponent = Cast<UStaticMeshComponent>(SceneComponent))
-    //    {
-    //        // Cooked FStaticMesh 사용 (MeshData 대체)
-    //        FStaticMesh* StaticMesh = FObjManager::LoadObjStaticMeshAsset(
-    //            StaticMeshComponent->GetStaticMesh()->GetFilePath()
-    //        );
-
-    //        if (!StaticMesh) return false;
-
-    //        // 피킹 계산에는 컴포넌트의 월드 변환 행렬 사용
-    //        FMatrix WorldMatrix = StaticMeshComponent->GetWorldMatrix();
-
-    //        auto TransformPoint = [&](float X, float Y, float Z) -> FVector
-    //            {
-    //                // row-vector (v^T) * M 방식으로 월드 변환 (translation 반영)
-    //                FVector4 V4(X, Y, Z, 1.0f);
-    //                FVector4 OutV4;
-    //                OutV4.X = V4.X * WorldMatrix.M[0][0] + V4.Y * WorldMatrix.M[1][0] + V4.Z * WorldMatrix.M[2][0] + V4.W * WorldMatrix.M[3][0];
-    //                OutV4.Y = V4.X * WorldMatrix.M[0][1] + V4.Y * WorldMatrix.M[1][1] + V4.Z * WorldMatrix.M[2][1] + V4.W * WorldMatrix.M[3][1];
-    //                OutV4.Z = V4.X * WorldMatrix.M[0][2] + V4.Y * WorldMatrix.M[1][2] + V4.Z * WorldMatrix.M[2][2] + V4.W * WorldMatrix.M[3][2];
-    //                OutV4.W = V4.X * WorldMatrix.M[0][3] + V4.Y * WorldMatrix.M[1][3] + V4.Z * WorldMatrix.M[2][3] + V4.W * WorldMatrix.M[3][3];
-    //                return FVector(OutV4.X, OutV4.Y, OutV4.Z);
-    //            };
-
-    //        float ClosestT = 1e9f;
-    //        bool bHasHit = false;
-
-    //        // 인덱스가 있는 경우: 인덱스 삼각형 집합 검사
-    //        if (StaticMesh->Indices.Num() >= 3)
-    //        {
-    //            uint32 IndexNum = StaticMesh->Indices.Num();
-    //            for (uint32 Idx = 0; Idx + 2 < IndexNum; Idx += 3)
-    //            {
-    //                const FNormalVertex& V0N = StaticMesh->Vertices[StaticMesh->Indices[Idx + 0]];
-    //                const FNormalVertex& V1N = StaticMesh->Vertices[StaticMesh->Indices[Idx + 1]];
-    //                const FNormalVertex& V2N = StaticMesh->Vertices[StaticMesh->Indices[Idx + 2]];
-
-    //                FVector A = TransformPoint(V0N.pos.X, V0N.pos.Y, V0N.pos.Z);
-    //                FVector B = TransformPoint(V1N.pos.X, V1N.pos.Y, V1N.pos.Z);
-    //                FVector C = TransformPoint(V2N.pos.X, V2N.pos.Y, V2N.pos.Z);
-
-    //                float THit;
-    //                if (IntersectRayTriangleMT(Ray, A, B, C, THit))
-    //                {
-    //                    if (THit < ClosestT)
-    //                    {
-    //                        ClosestT = THit;
-    //                        bHasHit = true;
-    //                    }
-    //                }
-    //            }
-    //        }
-    //        // 인덱스가 없는 경우: 정점 배열을 순차적 삼각형으로 간주
-    //        else if (StaticMesh->Vertices.Num() >= 3)
-    //        {
-    //            uint32 VertexNum = StaticMesh->Vertices.Num();
-    //            for (uint32 Idx = 0; Idx + 2 < VertexNum; Idx += 3)
-    //            {
-    //                const FNormalVertex& V0N = StaticMesh->Vertices[Idx + 0];
-    //                const FNormalVertex& V1N = StaticMesh->Vertices[Idx + 1];
-    //                const FNormalVertex& V2N = StaticMesh->Vertices[Idx + 2];
-
-    //                FVector A = TransformPoint(V0N.pos.X, V0N.pos.Y, V0N.pos.Z);
-    //                FVector B = TransformPoint(V1N.pos.X, V1N.pos.Y, V1N.pos.Z);
-    //                FVector C = TransformPoint(V2N.pos.X, V2N.pos.Y, V2N.pos.Z);
-
-    //                float THit;
-    //                if (IntersectRayTriangleMT(Ray, A, B, C, THit))
-    //                {
-    //                    if (THit < ClosestT)
-    //                    {
-    //                        ClosestT = THit;
-    //                        bHasHit = true;
-    //                    }
-    //                }
-    //            }
-    //        }
-
-    //        // 가장 가까운 교차가 있으면 거리 반환
-    //        if (bHasHit)
-    //        {
-    //            OutDistance = ClosestT;
-    //            return true;
-    //        }
-    //    }
-    //}
-
-    //return false;
 }
 
 float CPickingSystem::GetAdaptiveThreshold(float cameraDistance)
