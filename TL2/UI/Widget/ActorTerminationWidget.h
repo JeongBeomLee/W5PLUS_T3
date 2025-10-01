@@ -15,6 +15,7 @@ public:
 	void RenderWidget() override;
 	void DeleteSelectedActor();
 	void DeleteSelectedComponent();
+	void AddComponentAtSelectedActor(UActorComponent* NewComponent);
 
 	UActorTerminationWidget();
 	~UActorTerminationWidget() override;
