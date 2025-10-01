@@ -30,8 +30,6 @@ void UResourceManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* I
     Resources.SetNum(static_cast<uint8>(ResourceType::End));
 
     Context = InContext;
-    //CreateGridMesh(GRIDNUM,"Grid");
-    //CreateAxisMesh(AXISLENGTH,"Axis");
 
     InitShaderILMap();
 
@@ -386,7 +384,7 @@ void UResourceManager::CreateDefaultShader()
     // 템플릿 Load 멤버함수 호출해서 Resources[UShader의 typeIndex][shader 파일 이름]에 UShader 포인터 할당
     Load<UShader>("Primitive.hlsl", EVertexLayoutType::PositionColor);
     Load<UShader>("StaticMeshShader.hlsl", EVertexLayoutType::PositionColorTexturNormal);
-    Load<UShader>("TextBillboard.hlsl", EVertexLayoutType::PositionBillBoard);
+    Load<UShader>("Billboard.hlsl", EVertexLayoutType::PositionBillBoard);
 }
 
 void UResourceManager::InitShaderILMap()
@@ -406,6 +404,14 @@ void UResourceManager::InitShaderILMap()
     ShaderToInputLayoutMap["StaticMeshShader.hlsl"] = layout;
     layout.clear();
 
+    layout.Add({ "WORLDPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    layout.Add({ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    layout.Add({ "UVRECT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 });
+    ShaderToInputLayoutMap["Billboard.hlsl"] = layout;
+
+    layout.clear();
+
+    // jft
     layout.Add({ "WORLDPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
     layout.Add({ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
     layout.Add({ "UVRECT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 });
@@ -440,9 +446,9 @@ void UResourceManager::InitTexToShaderMap()
 {
     TextureToShaderMap["TextBillboard.dds"] = "TextBillboard.hlsl";
     // jft : change hard coded path
-    TextureToShaderMap["Editor/Icon/Pawn_64x.dds"] = "TextBillboard.hlsl";
-    TextureToShaderMap["Editor/Icon/PointLight_64x.dds"] = "TextBillboard.hlsl";
-    TextureToShaderMap["Editor/Icon/SpotLight_64x.dds"] = "TextBillboard.hlsl";
+    TextureToShaderMap["Editor/Icon/Pawn_64x.dds"] = "Billboard.hlsl";
+    TextureToShaderMap["Editor/Icon/PointLight_64x.dds"] = "Billboard.hlsl";
+    TextureToShaderMap["Editor/Icon/SpotLight_64x.dds"] = "Billboard.hlsl";
 }
 
 

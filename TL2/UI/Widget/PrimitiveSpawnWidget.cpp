@@ -13,6 +13,7 @@
 #include "ObjectIterator.h"
 // jft
 #include "BillboardComponent.h"
+#include "TextRenderComponent.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -173,21 +174,6 @@ void UPrimitiveSpawnWidget::RenderWidget()
         SpawnActors();
     }
 
-    ////Obj Parser 테스트용
-    //static std::string fileName;  // 입력값 저장용
-    //// 입력창
-    //char buffer[256];
-    //strncpy_s(buffer, fileName.c_str(), sizeof(buffer));
-    //buffer[sizeof(buffer) - 1] = '\0';
-
-    //if (ImGui::InputText("file name", buffer, sizeof(buffer))) {
-    //	fileName = buffer;  // std::string으로 갱신
-    //}
-    //// 버튼
-    //if (ImGui::Button("Spawn Dice Test")) {
-    //	FObjManager::LoadObjStaticMesh("spaceCompound.obj");
-    //}
-
     ImGui::Spacing();
     ImGui::Separator();
 
@@ -288,9 +274,14 @@ void UPrimitiveSpawnWidget::SpawnActors() const
         FTransform SpawnTransform(SpawnLocation, SpawnRotation, SpawnScaleVec);
 
         AStaticMeshActor* NewActor = World->SpawnActor<AStaticMeshActor>(SpawnTransform);
+        // jft
         UBillboardComponent* NewBillboard = NewObject<UBillboardComponent>();
         NewActor->AddComponent(NewBillboard);
         NewBillboard->SetupAttachment(NewActor->GetRootComponent());
+
+        UTextRenderComponent* NewTextRender = NewObject<UTextRenderComponent>();
+        NewActor->AddComponent(NewTextRender);
+        NewTextRender->SetupAttachment(NewActor->GetRootComponent());
 
         if (NewActor)
         {
