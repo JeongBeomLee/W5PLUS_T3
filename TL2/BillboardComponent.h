@@ -18,5 +18,6 @@ public:
 
 private:
 	UTextQuad* Quad = nullptr;
+	FString IconPath = "Editor/Icon/Pawn_64x.dds";
 };
 

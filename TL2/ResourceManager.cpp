@@ -441,6 +441,8 @@ void UResourceManager::InitTexToShaderMap()
     TextureToShaderMap["TextBillboard.dds"] = "TextBillboard.hlsl";
     // jft : change hard coded path
     TextureToShaderMap["Editor/Icon/Pawn_64x.dds"] = "TextBillboard.hlsl";
+    TextureToShaderMap["Editor/Icon/PointLight_64x.dds"] = "TextBillboard.hlsl";
+    TextureToShaderMap["Editor/Icon/SpotLight_64x.dds"] = "TextBillboard.hlsl";
 }
 
 

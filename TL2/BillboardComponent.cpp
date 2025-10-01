@@ -27,6 +27,7 @@ void UBillboardComponent::RenderDetail()
 {
 	UMeshComponent::RenderDetail();
 
+	// jft
 	if (ImGui::TreeNode("Sprite"))
 	{
 		auto& RM = UResourceManager::GetInstance();
@@ -54,9 +55,9 @@ void UBillboardComponent::RenderDetail()
 		static int SelectedIdx = -1;
 
 		// 현재 머티리얼의 텍스처 이름으로 동기화(처음 1회 혹은 버튼으로)
-		if (SelectedIdx < 0 && Material && Material->GetTexture())
+		if (SelectedIdx < 0)
 		{
-			const FString CurrentName = Material->GetTexture()->GetName(); // GetName()은 엔진 쪽에 맞춰 조정
+			const FString CurrentName = IconPath;
 			for (int i = 0; i < static_cast<int>(IconTexNames.size()); ++i)
 			{
 				if (IconTexNames[i] == CurrentName)
@@ -76,8 +77,8 @@ void UBillboardComponent::RenderDetail()
 		{
 			if (SelectedIdx >= 0 && SelectedIdx < static_cast<int>(IconTexNames.size()))
 			{
-				const FString& TexPath = IconTexNames[SelectedIdx];
-				if (UTexture* NewTex = RM.Load<UTexture>(TexPath))
+				IconPath = IconTexNames[SelectedIdx];
+				if (UTexture* NewTex = RM.Load<UTexture>(IconPath))
 				{
 					if (!Material)
 					{
@@ -85,17 +86,13 @@ void UBillboardComponent::RenderDetail()
 						RM.Add<UMaterial>("IconBillboard", Material);
 					}
 					Material->SetTexture(NewTex);
-					UE_LOG("Applied Icon Texture: %s", TexPath.c_str());
+					UE_LOG("Applied Icon Texture: %s", IconPath.c_str());
 				}
 			}
 		}
 
 		// 읽기 전용 현재 텍스처 이름 표시
-		const char* CurrentTexName = "(none)";
-		if (Material && Material->GetTexture())
-			CurrentTexName = Material->GetTexture()->GetName().c_str(); // 엔진에 맞게
-
-		ImGui::Text("Current: %s", CurrentTexName);
+		ImGui::Text("Current: %s", IconPath);
 
 		ImGui::TreePop();
 	}
@@ -104,7 +101,7 @@ void UBillboardComponent::RenderDetail()
 void UBillboardComponent::Render(URenderer* Renderer, const FMatrix& View, const FMatrix& Proj)
 {
 	// jft : change hard coded path
-	Material->Load("Editor/Icon/Pawn_64x.dds", Renderer->GetRHIDevice()->GetDevice());
+	Material->Load(IconPath, Renderer->GetRHIDevice()->GetDevice());
 	AActor* Owner = GetOwner();
 	UWorld* World = Owner->GetWorld();	
 	ACameraActor* CameraActor = World->GetCameraActor();
