@@ -149,7 +149,7 @@ void UTargetActorTransformWidget::RenderWidget()
 		ImGui::Text("UUID: %u", static_cast<unsigned int>(SelectedActor->UUID));
 		ImGui::Spacing();
 
-		const TSet<UActorComponent*>& ActorComponents = SelectedActor->GetComponents();
+		const TSet<UActorComponent*>& ActorComponents = SelectedActor->GetAllComponents();
 		if (SelectedComponent != nullptr)
 		{
 			SelectedComponent->RenderDetailCommon();

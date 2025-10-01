@@ -51,13 +51,39 @@ public:
     UWorld* GetWorld() const { return World; }
 
     USceneComponent* GetRootComponent() { return RootComponent; }
+    template<typename T>
+    bool TryGetComponent(T*& Component)
+    {
+        for (UActorComponent* Child : Components)
+        {
+            if (Component = Cast<T>(Child))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+    template<typename T>
+    TSet<T*> GetComponents()
+    {
+        TSet<T*> Set;
+        T* Component = nullptr;
+        for (UActorComponent* Child : Components)
+        {
+            if (Component = Cast<T>(Child))
+            {
+                Set.Add(Component);
+            }
+        }
+        return Set;
+    }
 
     void SetIsPicked(bool picked) { bIsPicked = picked; }
     bool GetIsPicked() { return bIsPicked; }
 
     //-----------------------------
     //----------Getter------------
-    const TSet<UActorComponent*>& GetComponents() const;
+    const TSet<UActorComponent*>& GetAllComponents() const;
 
     void SetName(const FString& InName) { Name = InName; }
     const FName& GetName() { return Name; }
