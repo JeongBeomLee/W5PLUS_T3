@@ -14,10 +14,19 @@ UImGuiHelper::~UImGuiHelper()
 	Release();
 }
 
+static std::string WideToUtf8(const std::wstring& w)
+{
+	if (w.empty()) return {};
+	int len = ::WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), nullptr, 0, nullptr, nullptr);
+	std::string out(len, 0);
+	::WideCharToMultiByte(CP_UTF8, 0, w.c_str(), (int)w.size(), out.data(), len, nullptr, nullptr);
+	return out;
+}
+
 /**
  * @brief ImGui 초기화 함수
  */
-void UImGuiHelper::Initialize(HWND InWindowHandle)
+[[DEPRECATED]]void UImGuiHelper::Initialize(HWND InWindowHandle)
 {
 	if (bIsInitialized)
 	{
@@ -29,8 +38,9 @@ void UImGuiHelper::Initialize(HWND InWindowHandle)
 	ImGui_ImplWin32_Init(InWindowHandle);
 
 	ImGuiIO& IO = ImGui::GetIO();
-	// Use default ImGui font
-	// IO.Fonts->AddFontDefault();
+	
+	IO.Fonts->AddFontDefault();
+	
 
 	// Note: This overload needs device and context to be passed explicitly
 	// Use the new Initialize overload instead
@@ -52,8 +62,29 @@ void UImGuiHelper::Initialize(HWND InWindowHandle, ID3D11Device* InDevice, ID3D1
 	ImGui_ImplWin32_Init(InWindowHandle);
 
 	ImGuiIO& IO = ImGui::GetIO();
-	// Use default ImGui font
-	// IO.Fonts->AddFontDefault();
+	// Use Utf8 path
+	std::wstring fontPathW = L"Pretendard-Regular.otf";
+	const std::string fontPathUtf8 = WideToUtf8(fontPathW);
+
+	ImFontConfig cfg;
+	cfg.OversampleH = cfg.OversampleV = 1;
+	cfg.PixelSnapH = true;
+	cfg.FontDataOwnedByAtlas = true;
+
+	const ImWchar* ranges = IO.Fonts->GetGlyphRangesKorean();
+	float sizePx = 18.0f;
+
+	ImFont* font = IO.Fonts->AddFontFromFileTTF(
+		fontPathUtf8.c_str(),  // ★ UTF-8 경로 전달
+		sizePx,
+		&cfg,
+		ranges
+	);
+
+	if (!font) {
+		// 실패 시 기본 내장 폰트로 폴백 (디버그 로그 추천)
+		IO.Fonts->AddFontDefault();
+	}
 
 	// Initialize ImGui DirectX11 backend with provided device and context
 	ImGui_ImplDX11_Init(InDevice, InDeviceContext);

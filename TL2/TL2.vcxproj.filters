@@ -414,6 +414,12 @@
     <ClCompile Include="Vector.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="BillboardComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="SimpleRotatingMovementComponent.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Primitive.hlsl">
@@ -431,6 +437,7 @@
     <FxCompile Include="StaticMeshPS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="Billboard.hlsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ImGui\imconfig.h">
@@ -758,6 +765,12 @@
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="FViewport.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardComponent.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleRotatingMovementComponent.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>

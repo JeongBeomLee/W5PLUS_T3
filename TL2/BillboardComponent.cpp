@@ -90,9 +90,10 @@ void UBillboardComponent::RenderDetail()
 				}
 			}
 		}
-
 		// 읽기 전용 현재 텍스처 이름 표시
-		ImGui::Text("Current: %s", IconPath);
+		// %s는 char pointer 필요
+		IconPath = "필요";
+		ImGui::Text("Current: %s", IconPath.c_str());
 
 		ImGui::TreePop();
 	}
@@ -169,5 +170,6 @@ void UBillboardComponent::Render(URenderer* Renderer, const FMatrix& View, const
 	Renderer->DrawIndexedPrimitiveComponent(this, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	Renderer->OMSetBlendState(false);
 }
+
 
 
