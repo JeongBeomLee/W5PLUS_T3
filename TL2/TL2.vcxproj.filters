@@ -411,6 +411,9 @@
     <ClCompile Include="Globals.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="BillboardComponent.cpp">
+      <Filter>소스 파일\Component</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="Primitive.hlsl">
@@ -756,6 +759,9 @@
     </ClInclude>
     <ClInclude Include="FViewport.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="BillboardComponent.h">
+      <Filter>헤더 파일\Component</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

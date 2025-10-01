@@ -39,6 +39,7 @@ public:
     UMaterial* GetOrCreateMaterial(const FString& Name,  EVertexLayoutType layoutType);
 
     void CreateTextBillboardTexture();
+    void CreateIconBillboardTexture();
 
     void UpdateDynamicVertexBuffer(const FString& name, TArray<FBillboardVertexInfo_GPU>& vertices);
     FTextureData* CreateOrGetTextureData(const FWideString& FilePath);
