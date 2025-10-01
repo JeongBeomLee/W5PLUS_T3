@@ -9,6 +9,7 @@
 #include "SceneComponent.h"
 #include "StaticMeshComponent.h"
 #include "SimpleRotatingMovementComponent.h"
+#include "BillboardComponent.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -96,7 +97,7 @@ void UActorTerminationWidget::RenderWidget()
 	auto& InputManager = UInputManager::GetInstance();
 	SelectedActor = SelectionManager->GetSelectedActor();
 	SelectedComponent = SelectionManager->GetSelectedComponent();
-	if (ImGui::Button("Delete Selected") || InputManager.IsKeyPressed(VK_DELETE))
+	if (ImGui::Button("Delete Actor") || InputManager.IsKeyPressed(VK_DELETE))
 	{
 		if (SelectedActor != nullptr)
 		{
@@ -127,7 +128,11 @@ void UActorTerminationWidget::RenderWidget()
 			UStaticMeshComponent* StaticMeshComponent = NewObject<UStaticMeshComponent>();
 			AddComponentAtSelectedActor(StaticMeshComponent);
 			StaticMeshComponent->SetStaticMesh("Data/Cube.obj");
-
+		}
+		if (ImGui::Selectable("Billboard"))
+		{
+			UBillboardComponent* NewBillboard = NewObject<UBillboardComponent>();
+			AddComponentAtSelectedActor(NewBillboard);
 		}
 		ImGui::EndPopup();
 	}
