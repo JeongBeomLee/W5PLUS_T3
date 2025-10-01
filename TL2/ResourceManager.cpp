@@ -225,7 +225,14 @@ void UResourceManager::CreateTextBillboardMesh()
     UTextQuad* Mesh = NewObject<UTextQuad>();
     Mesh->Load(BillboardData, Device);
     Add<UTextQuad>("TextBillboard", Mesh);
+
+    // jft
+    UTextQuad* Mesh2 = NewObject<UTextQuad>();
+    Mesh2->Load(BillboardData, Device);
+    Add<UTextQuad>("IconBillboard", Mesh2);
+
     UMeshLoader::GetInstance().AddMeshData("TextBillboard", BillboardData);
+    UMeshLoader::GetInstance().AddMeshData("IconBillboard", BillboardData);
 }
 
 void UResourceManager::CreateGridMesh(int N, const FString& FilePath)
@@ -433,6 +440,8 @@ FString& UResourceManager::GetProperShader(const FString& InTextureName)
 void UResourceManager::InitTexToShaderMap()
 {
     TextureToShaderMap["TextBillboard.dds"] = "TextBillboard.hlsl";
+    // jft
+    TextureToShaderMap["Pawn_64x.dds"] = "TextBillboard.hlsl";
 }
 
 

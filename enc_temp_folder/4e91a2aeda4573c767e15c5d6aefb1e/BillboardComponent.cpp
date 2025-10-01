@@ -32,7 +32,12 @@ void UBillboardComponent::Render(URenderer* Renderer, const FMatrix& View, const
 {
 	Material->Load("Pawn_64x.dds", Renderer->GetRHIDevice()->GetDevice());
 	AActor* Owner = GetOwner();
-	UWorld* World = Owner->GetWorld();	
+	UWorld* World = Owner->GetWorld();
+	if (!World)
+	{
+		UE_LOG("Why...");
+		return;
+	}
 	ACameraActor* CameraActor = World->GetCameraActor();
 	FVector CamRight = CameraActor->GetActorRight();
 	FVector CamUp = CameraActor->GetActorUp();
