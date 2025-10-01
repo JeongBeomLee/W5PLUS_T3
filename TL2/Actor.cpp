@@ -144,7 +144,7 @@ void AActor::SetActorTransform(const FTransform& Transform)
     RootComponent->SetRelativeTransform(Transform);
 }
 
-const TSet<UActorComponent*>& AActor::GetComponents() const
+const TSet<UActorComponent*>& AActor::GetAllComponents() const
 {
     return Components;
 }

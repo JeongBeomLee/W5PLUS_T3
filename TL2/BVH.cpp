@@ -42,7 +42,7 @@ void FBVH::Build(const TArray<AActor*>& Actors)
 
         if (const AStaticMeshActor* StaticMeshActor = Cast<const AStaticMeshActor>(Actor))
         {
-            for (auto Component : StaticMeshActor->GetComponents()) // 최적화: AABB 컴포넌트만 검색
+            for (auto Component : StaticMeshActor->GetAllComponents()) // 최적화: AABB 컴포넌트만 검색
             {
                 if (UAABoundingBoxComponent* AABBComponent = Cast<UAABoundingBoxComponent>(Component))
                 {
@@ -479,7 +479,7 @@ bool FBVH::IntersectNode(int NodeIndex,
     return bHit;
 }
 
-bool FBVH::IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
+bool FBVH::IntersectActor(AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
     float& OutDistance) const
 {
     FRay Ray;

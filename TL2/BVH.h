@@ -149,7 +149,7 @@ private:
     //                   float& InOutDistance, AActor*& OutActor, int RecursionDepth = 0) const;
 
     // 액터와의 교차 검사
-    bool IntersectActor(const AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
+    bool IntersectActor(AActor* Actor, const FVector& RayOrigin, const FVector& RayDirection,
                         float& OutDistance) const;
 
     // 상수
