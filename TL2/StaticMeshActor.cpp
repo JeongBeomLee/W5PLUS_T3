@@ -13,10 +13,6 @@ AStaticMeshActor::AStaticMeshActor()
     CollisionComponent = CreateDefaultSubobject<UAABoundingBoxComponent>(FName("CollisionBox"));
     AddComponent(CollisionComponent);
 	CollisionComponent->SetupAttachment(RootComponent);
-
-    // 회전 컴포넌트 생성
-    RotatingMovementComponent = CreateDefaultSubobject<USimpleRotatingMovementComponent>(FName("RotatingMovement"));
-    AddComponent(RotatingMovementComponent);
 }
 
 void AStaticMeshActor::Tick(float DeltaTime)
@@ -88,7 +84,6 @@ void AStaticMeshActor::DuplicateSubObjects()
     // AStaticMeshActor 전용 멤버 포인터 재설정
     StaticMeshComponent = nullptr;
     CollisionComponent = nullptr;
-    RotatingMovementComponent = nullptr;
 
     for (UActorComponent* Comp : Components)
     {
@@ -99,10 +94,6 @@ void AStaticMeshActor::DuplicateSubObjects()
         if (!CollisionComponent)
         {
             CollisionComponent = Cast<UAABoundingBoxComponent>(Comp);
-        }
-        if (!RotatingMovementComponent)
-        {
-            RotatingMovementComponent = Cast<USimpleRotatingMovementComponent>(Comp);
         }
     }
 }
