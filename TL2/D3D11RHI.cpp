@@ -378,7 +378,11 @@ void D3D11RHI::RSSetState(EViewModeIndex ViewModeIndex)
     {
         DeviceContext->RSSetState(WireFrameRasterizerState);
     }
-    else
+    else if (ViewModeIndex == EViewModeIndex::VMI_Lit_Nocull)
+    {
+        DeviceContext->RSSetState(CullNoneSolidRaterizerState);
+    }
+    else 
     {
         DeviceContext->RSSetState(DefaultRasterizerState);
     }
@@ -492,12 +496,12 @@ void D3D11RHI::CreateFrameBuffer()
 
 void D3D11RHI::CreateRasterizerState()
 {
-    D3D11_RASTERIZER_DESC deafultrasterizerdesc = {};
-    deafultrasterizerdesc.FillMode = D3D11_FILL_SOLID; // 채우기 모드
-    deafultrasterizerdesc.CullMode = D3D11_CULL_BACK; // 백 페이스 컬링
-    deafultrasterizerdesc.DepthClipEnable = TRUE; // 근/원거리 평면 클리핑
+    D3D11_RASTERIZER_DESC defaultrasterizerdesc = {};
+    defaultrasterizerdesc.FillMode = D3D11_FILL_SOLID; // 채우기 모드
+    defaultrasterizerdesc.CullMode = D3D11_CULL_BACK; // 백 페이스 컬링
+    defaultrasterizerdesc.DepthClipEnable = TRUE; // 근/원거리 평면 클리핑
 
-    Device->CreateRasterizerState(&deafultrasterizerdesc, &DefaultRasterizerState);
+    Device->CreateRasterizerState(&defaultrasterizerdesc, &DefaultRasterizerState);
 
     D3D11_RASTERIZER_DESC wireframerasterizerdesc = {};
     wireframerasterizerdesc.FillMode = D3D11_FILL_WIREFRAME; // 채우기 모드
@@ -505,6 +509,13 @@ void D3D11RHI::CreateRasterizerState()
     wireframerasterizerdesc.DepthClipEnable = TRUE; // 근/원거리 평면 클리핑
 
     Device->CreateRasterizerState(&wireframerasterizerdesc, &WireFrameRasterizerState);
+
+    D3D11_RASTERIZER_DESC cullnonerasterizerdesc = {};
+    cullnonerasterizerdesc.FillMode = D3D11_FILL_SOLID; // 채우기 모드
+    cullnonerasterizerdesc.CullMode = D3D11_CULL_NONE; // 컬링 Off
+    cullnonerasterizerdesc.DepthClipEnable = TRUE; // 근/원거리 평면 클리핑
+
+    Device->CreateRasterizerState(&cullnonerasterizerdesc, &CullNoneSolidRaterizerState);
 }
 
 void D3D11RHI::CreateConstantBuffer()
