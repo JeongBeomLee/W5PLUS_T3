@@ -153,7 +153,9 @@ void FViewportClient::MouseMove(FViewport* Viewport, int32 X, int32 Y)
 		GizmoActor->ProcessGizmoInteraction(Camera, Viewport, static_cast<float>(X), static_cast<float>(Y));
 	}
 
-	if (GizmoActor && !bIsMouseButtonDown && !GizmoActor->GetbIsHovering() && bIsMouseRightButtonDown) // 직교투영이고 마우스 버튼이 눌려있을 때
+	bool bCanMoveCamera = !bIsMouseButtonDown && bIsMouseRightButtonDown && (!GizmoActor || !GizmoActor->GetbIsHovering());
+
+	if (bCanMoveCamera) // 직교투영이고 마우스 버튼이 눌려있을 때
 	{
 		if (ViewportType != EViewportType::Perspective) 
 		{

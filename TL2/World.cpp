@@ -382,28 +382,24 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 				}
 			}
 
-			bool bIsSelected = SelectionManager.IsActorSelected(Actor);
+			//bool bIsSelected = SelectionManager.IsActorSelected(Actor);
 			/*if (bIsSelected)
 				Renderer->OMSetDepthStencilState(EComparisonFunc::Always);*/ // 이렇게 하면, 같은 메시에 속한 정점끼리도 뒤에 있는게 앞에 그려지는 경우가 발생해, 이상하게 렌더링 됨.
 
-			Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
+			//Renderer->UpdateHighLightConstantBuffer(bIsSelected, rgb, 0, 0, 0, 0);
 
 			for (UActorComponent* Component : Actor->GetComponents())
 			{
 				if (!Component) continue;
 				if (UActorComponent* ActorComp = Cast<UActorComponent>(Component))
 					if (!ActorComp->IsActive()) continue;
+					if (Cast<UTextRenderComponent>(Component) && !IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText)) continue;
+					if (Cast<UAABoundingBoxComponent>(Component) && !IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes)) continue;
 
-					if (Cast<UTextRenderComponent>(Component) && !IsShowFlagEnabled(EEngineShowFlags::SF_BillboardText))
-						continue;
-
-					//if (Cast<UAABoundingBoxComponent>(Component) && !IsShowFlagEnabled(EEngineShowFlags::SF_BoundingBoxes))
-						//continue;
 				if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
 				{
 					Renderer->SetViewModeType(ViewModeIndex);
 					Primitive->Render(Renderer, ViewMatrix, ProjectionMatrix);
-				//	Renderer->OMSetDepthStencilState(EComparisonFunc::LessEqual);
 				}
 			}
 			Renderer->OMSetBlendState(false);
@@ -941,6 +937,7 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
 
 	// GizmoActor는 PIE에서 사용하지 않음
 	PIEWorld->GizmoActor = nullptr;
+	//PIEWorld->GizmoActor = EditorWorld->GizmoActor;
 
 	// GridActor 공유 (선택적)
 	PIEWorld->GridActor = nullptr;
