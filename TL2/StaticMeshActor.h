@@ -12,7 +12,7 @@ public:
 
     // 복제 시스템
     virtual UObject* Duplicate() override;
-    //virtual void DuplicateSubObjects() override;
+    virtual void DuplicateSubObjects() override;
 protected:
     ~AStaticMeshActor() override;
 
