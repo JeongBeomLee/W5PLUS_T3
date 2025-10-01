@@ -4,6 +4,7 @@
 
 class UStaticMeshComponent;
 class UTextRenderComponent;
+class UBillboardComponent;
 class UMeshComponent;
 class URHIDevice;
 class UShader;
@@ -43,6 +44,8 @@ public:
     void UpdateUVScroll(const FVector2D& Speed, float TimeSec);
 
     void DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);
+    // jft
+    void DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology);
 
     void SetViewModeType(EViewModeIndex ViewModeIndex);
     // Batch Line Rendering System

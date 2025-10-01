@@ -61,7 +61,7 @@ UObject* AStaticMeshActor::Duplicate()
     NewActor->bHiddenInGame = this->bHiddenInGame;
     NewActor->bTickInEditor = this->bTickInEditor;
 
-    // 생성자에서 만든 기본 컴포넌트 제거 (원본 컴포넌트로 교체할 예정)
+    // 생성자에서 만든 NewActor의 기본 컴포넌트 제거
     if (NewActor->StaticMeshComponent)
     {
         NewActor->Components.erase(NewActor->StaticMeshComponent);
@@ -75,18 +75,46 @@ UObject* AStaticMeshActor::Duplicate()
         NewActor->CollisionComponent = nullptr;
     }
 
-    // 원본(this)의 컴포넌트를 복제하여 NewActor에 추가
+    // 원본(this)의 컴포넌트를 NewActor에 임시 설정하여 DuplicateSubObjects가 복제할 수 있도록 함
+    TSet<UActorComponent*> OriginalComponents = this->Components;
+    USceneComponent* OriginalRootComponent = this->RootComponent;
+
+    NewActor->Components = OriginalComponents;
+    NewActor->RootComponent = OriginalRootComponent;
+
+    // 서브 오브젝트(Components) 복제
+    NewActor->DuplicateSubObjects();
+
+    // Transform 복사
+    if (this->RootComponent && NewActor->RootComponent)
+    {
+        NewActor->SetActorTransform(this->RootComponent->GetRelativeTransform());
+    }
+
+    return NewActor;
+}
+
+// AStaticMeshActor 서브 오브젝트 복제
+void AStaticMeshActor::DuplicateSubObjects()
+{
+    // 이 시점에서 Components는 원본 액터의 컴포넌트를 가리키고 있음 (Duplicate()에서 설정됨)
+
+    // 컴포넌트 복제 및 매핑 테이블 생성
+    TSet<UActorComponent*> OriginalComponents = Components;
+    Components.clear();
+
+    // 원본 -> 복제본 매핑
     TMap<UActorComponent*, UActorComponent*> ComponentMap;
 
-    for (UActorComponent* OriginalComponent : this->Components)
+    for (UActorComponent* OriginalComponent : OriginalComponents)
     {
         if (OriginalComponent)
         {
             UActorComponent* NewComp = Cast<UActorComponent>(OriginalComponent->Duplicate());
             if (NewComp)
             {
-                NewComp->SetOwner(NewActor);
-                NewActor->AddComponent(NewComp);
+                NewComp->SetOwner(this);
+                AddComponent(NewComp);
                 ComponentMap[OriginalComponent] = NewComp;
             }
         }
@@ -113,29 +141,25 @@ UObject* AStaticMeshActor::Duplicate()
     }
 
     // RootComponent 설정
-    if (this->RootComponent && ComponentMap.find(this->RootComponent) != ComponentMap.end())
+    if (RootComponent)
     {
-        NewActor->RootComponent = Cast<USceneComponent>(ComponentMap[this->RootComponent]);
+        USceneComponent* OriginalRootComponent = RootComponent;
+        if (ComponentMap.find(OriginalRootComponent) != ComponentMap.end())
+        {
+            RootComponent = Cast<USceneComponent>(ComponentMap[OriginalRootComponent]);
+        }
     }
-    
+
     // AStaticMeshActor 전용 멤버 포인터 설정
-    for (UActorComponent* Comp : NewActor->Components)
+    for (UActorComponent* Comp : Components)
     {
-        if (!NewActor->StaticMeshComponent)
+        if (!StaticMeshComponent)
         {
-            NewActor->StaticMeshComponent = Cast<UStaticMeshComponent>(Comp);
+            StaticMeshComponent = Cast<UStaticMeshComponent>(Comp);
         }
-        if (!NewActor->CollisionComponent)
+        if (!CollisionComponent)
         {
-            NewActor->CollisionComponent = Cast<UAABoundingBoxComponent>(Comp);
+            CollisionComponent = Cast<UAABoundingBoxComponent>(Comp);
         }
     }
-
-    // Transform 복사
-    if (this->RootComponent && NewActor->RootComponent)
-    {
-        NewActor->SetActorTransform(this->RootComponent->GetRelativeTransform());
-    }
-
-    return NewActor;
 }

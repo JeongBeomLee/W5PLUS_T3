@@ -30,7 +30,6 @@ public:
     // Transform API
     // ───────────────
     void SetActorTransform(const FTransform& Transform);
-    FTransform GetActorTransform()const;
 
     void SetActorLocation(const FVector& NewLocation);
     FVector GetActorLocation() const;

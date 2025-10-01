@@ -33,6 +33,7 @@
 #include "UI/Window/SceneWindow.h"
 #include "UI/Window/UIWindow.h"
 #include "TextRenderComponent.h"
+#include "BillboardComponent.h"
 #include "AABoundingBoxComponent.h"
 #include "StaticMesh.h"
 #include "Shader.h"
@@ -73,6 +74,7 @@ IMPLEMENT_CLASS(UGizmoRotateComponent)
 IMPLEMENT_CLASS(ULineComponent)
 IMPLEMENT_CLASS(ULine)
 IMPLEMENT_CLASS(UTextRenderComponent)
+IMPLEMENT_CLASS(UBillboardComponent)
 
 // Managers / Systems
 IMPLEMENT_CLASS(UInputManager)

@@ -73,11 +73,11 @@ void SViewportWindow::OnRender()
 	RenderToolbar();
 	if (ViewportClient)
 		ViewportClient->Draw(Viewport);
-	// 툴바 렌더링
-	
+
+	// PIE 모드 페이드 인/아웃
+	RenderPIEOverlay();
+
 	Viewport->EndRenderFrame();
-
-
 }
 
 void SViewportWindow::OnUpdate(float DeltaSeconds)
@@ -87,7 +87,22 @@ void SViewportWindow::OnUpdate(float DeltaSeconds)
 
 	if (!Viewport) return;
 
-	// 툴바 높이만큼 뷰포트 영역 조정
+	// PIE 테두리 알파값 업데이트 (페이드 인/아웃)
+	const float FadeSpeed = 2.0f;
+	if (PIEWorld != nullptr && ViewportClient && ViewportClient->GetWorld()->IsPIEWorld())
+	{
+		// Fade In
+		PIEBorderAlpha += DeltaSeconds * FadeSpeed;
+		if (PIEBorderAlpha > 1.0f)
+			PIEBorderAlpha = 1.0f;
+	}
+	else
+	{
+		// Fade Out
+		PIEBorderAlpha -= DeltaSeconds * FadeSpeed;
+		if (PIEBorderAlpha < 0.0f)
+			PIEBorderAlpha = 0.0f;
+	}
 
 	uint32 NewStartX = static_cast<uint32>(Rect.Left);
 	uint32 NewStartY = static_cast<uint32>(Rect.Top );
@@ -160,6 +175,15 @@ void SViewportWindow::RenderToolbar()
 
 	if (ImGui::Begin(windowId, nullptr, flags))
 	{
+		// PIE 모드 체크
+		bool bIsPIEMode = (PIEWorld != nullptr && ViewportClient && ViewportClient->GetWorld()->IsPIEWorld());
+
+		// PIE 모드일 때 버튼들 비활성화 (Stop 제외)
+		if (bIsPIEMode)
+		{
+			ImGui::BeginDisabled();
+		}
+
 		// 뷰포트 모드 선택 콤보박스
 		const char* viewportModes[] = {
 			"Perspective",
@@ -185,7 +209,7 @@ void SViewportWindow::RenderToolbar()
 				{
 					ViewportClient->SetViewportType(ViewportType);
 					ViewportClient->SetupCameraMode();
-					
+
 				}
 
 				// 뷰포트 이름 업데이트
@@ -221,7 +245,7 @@ void SViewportWindow::RenderToolbar()
 		ImGui::SameLine();
 
 		const char* viewModes[] = { "Lit", "Unlit", "Wireframe" };
-		int currentViewMode = static_cast<int>(ViewportClient-> GetViewModeIndex())-1; // 0=Lit, 1=Unlit, 2=Wireframe -1이유 1부터 시작이여서 
+		int currentViewMode = static_cast<int>(ViewportClient-> GetViewModeIndex())-1; // 0=Lit, 1=Unlit, 2=Wireframe -1이유 1부터 시작이여서
 
 		ImGui::SameLine();
 		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 2)); // 버튼/콤보 내부 여백 축소
@@ -239,6 +263,12 @@ void SViewportWindow::RenderToolbar()
 			case 2: ViewportClient->SetViewModeIndex(EViewModeIndex::VMI_Wireframe); break;
 			}
 		}
+
+		// PIE 모드 비활성화 종료
+		if (bIsPIEMode)
+		{
+			ImGui::EndDisabled();
+		}
 		// 🔘 여기 ‘한 번 클릭’ 버튼 추가
 		const float btnW = 60.0f;
 		const ImVec2 btnSize(btnW, 0.0f);
@@ -248,17 +278,31 @@ void SViewportWindow::RenderToolbar()
 		ImGui::SameLine();
 		if (PIEWorld == nullptr)
 		{
+			// Play 버튼 - 진한 녹색
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.2f, 0.6f, 0.2f, 1.0f));       
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.7f, 0.3f, 1.0f));
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.1f, 0.5f, 0.1f, 1.0f)); 
+
 			if (ImGui::Button("Play (PIE)"))
 			{
 				StartPIE();
 			}
+
+			ImGui::PopStyleColor(3);
 		}
 		else
 		{
+			// Stop 버튼 - 빨간색
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));        
+			ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.9f, 0.3f, 0.3f, 1.0f)); 
+			ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.7f, 0.1f, 0.1f, 1.0f));  
+
 			if (ImGui::Button("Stop (PIE)"))
 			{
 				EndPIE();
 			}
+
+			ImGui::PopStyleColor(3);
 		}
 
 		ImGui::SameLine();
@@ -267,10 +311,21 @@ void SViewportWindow::RenderToolbar()
 			ImGui::SetCursorPosX(ImGui::GetCursorPosX() + (avail - btnW));
 		}
 
+		// Switch 버튼도 PIE 모드에서 비활성화
+		if (bIsPIEMode)
+		{
+			ImGui::BeginDisabled();
+		}
+
 		if (ImGui::Button("Switch##ToThis", btnSize))
 		{
 			if (GWorld && GWorld->GetMultiViewportWindow())
 				GWorld->GetMultiViewportWindow()->SwitchPanel(this);
+		}
+
+		if (bIsPIEMode)
+		{
+			ImGui::EndDisabled();
 		}
 
 		//ImGui::PopStyleVar();
@@ -279,7 +334,6 @@ void SViewportWindow::RenderToolbar()
 	ImGui::End();
 }
 
-// PIE 시작
 void SViewportWindow::StartPIE()
 {
 	if (!GEditor || !ViewportClient || PIEWorld != nullptr)
@@ -324,7 +378,6 @@ void SViewportWindow::StartPIE()
 	UE_LOG("PIE Started\n");
 }
 
-// PIE 종료
 void SViewportWindow::EndPIE()
 {
 	if (!GEditor || !PIEWorld)
@@ -346,4 +399,23 @@ void SViewportWindow::EndPIE()
 	PIEWorld = nullptr;
 
 	UE_LOG("PIE Stop Requested\n");
+}
+
+void SViewportWindow::RenderPIEOverlay()
+{
+	// 알파값이 0이면 그리지 않음
+	if (PIEBorderAlpha <= 0.0f)
+		return;
+	if (ImGui::IsPopupOpen("", ImGuiPopupFlags_AnyPopupId))
+		return;
+
+	// 뷰포트 테두리 (초록색)
+	ImDrawList* drawList = ImGui::GetForegroundDrawList();
+	ImVec2 min(Rect.Left, Rect.Top / 0.35f);
+	ImVec2 max(Rect.Right, Rect.Bottom);
+
+	// 초록색 테두리 (두께 4픽셀) - 알파값 적용
+	int alpha = static_cast<int>(PIEBorderAlpha * 255.0f);
+	ImU32 borderColor = IM_COL32(0, 255, 0, alpha); // 초록색 + 페이드 알파
+	drawList->AddRect(min, max, borderColor, 0.0f, 0, 4.0f);
 }

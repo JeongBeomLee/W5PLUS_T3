@@ -204,7 +204,7 @@ UObject* AActor::Duplicate()
 // 서브 오브젝트(Components) 복제
 void AActor::DuplicateSubObjects()
 {
-    // 1단계: 컴포넌트 복제 및 매핑 테이블 생성
+    // 컴포넌트 복제 및 매핑 테이블 생성
     TSet<UActorComponent*> OriginalComponents = Components;
     Components.clear();
 
@@ -225,7 +225,7 @@ void AActor::DuplicateSubObjects()
         }
     }
 
-    // 2단계: SceneComponent 계층 구조 복원
+    // SceneComponent 계층 구조 복원
     for (const auto& Pair : ComponentMap)
     {
         USceneComponent* OriginalSceneComponent = Cast<USceneComponent>(Pair.first);
@@ -246,7 +246,7 @@ void AActor::DuplicateSubObjects()
         }
     }
 
-    // 3단계: RootComponent 설정
+    // RootComponent 설정
     if (RootComponent)
     {
         USceneComponent* OriginalRootComponent = RootComponent;

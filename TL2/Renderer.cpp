@@ -1,5 +1,6 @@
 ﻿#include "pch.h"
 #include "TextRenderComponent.h"
+#include "BillboardComponent.h"
 #include "Shader.h"
 #include "StaticMesh.h"
 #include "TextQuad.h"
@@ -206,6 +207,59 @@ void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITI
 }
 
 void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology)
+{
+    URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
+
+    // 디버그: TextRenderComponent 렌더링 통계
+
+    UINT Stride = sizeof(FBillboardVertexInfo_GPU);
+    ID3D11Buffer* VertexBuff = Comp->GetStaticMesh()->GetVertexBuffer();
+    ID3D11Buffer* IndexBuff = Comp->GetStaticMesh()->GetIndexBuffer();
+
+    // 매테리얼 변경 추적
+    UMaterial* CompMaterial = Comp->GetMaterial();
+    if (LastMaterial != CompMaterial)
+    {
+        StatsCollector.IncrementMaterialChanges();
+        LastMaterial = CompMaterial;
+    }
+
+    UShader* CompShader = CompMaterial->GetShader();
+    // 셰이더 변경 추적
+    if (LastShader != CompShader)
+    {
+        StatsCollector.IncrementShaderChanges();
+        LastShader = CompShader;
+    }
+
+    RHIDevice->GetDeviceContext()->IASetInputLayout(CompShader->GetInputLayout());
+
+
+    UINT offset = 0;
+    RHIDevice->GetDeviceContext()->IASetVertexBuffers(
+        0, 1, &VertexBuff, &Stride, &offset
+    );
+    RHIDevice->GetDeviceContext()->IASetIndexBuffer(
+        IndexBuff, DXGI_FORMAT_R32_UINT, 0
+    );
+
+    // 텍스처 변경 추적 (텍스처 비교)
+    UTexture* CompTexture = CompMaterial->GetTexture();
+    if (LastTexture != CompTexture)
+    {
+        StatsCollector.IncrementTextureChanges();
+        LastTexture = CompTexture;
+    }
+
+    ID3D11ShaderResourceView* TextureSRV = CompTexture->GetShaderResourceView();
+    RHIDevice->PSSetDefaultSampler(0);
+    RHIDevice->GetDeviceContext()->PSSetShaderResources(0, 1, &TextureSRV);
+    RHIDevice->GetDeviceContext()->IASetPrimitiveTopology(InTopology);
+    RHIDevice->GetDeviceContext()->DrawIndexed(Comp->GetStaticMesh()->GetIndexCount(), 0, 0);
+    StatsCollector.IncrementDrawCalls();
+}
+
+void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {
     URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
 

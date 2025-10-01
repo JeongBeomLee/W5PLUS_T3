@@ -30,6 +30,7 @@ public:
   
 private:
     void RenderToolbar();
+    void RenderPIEOverlay();
     void StartPIE();
     void EndPIE();
 
@@ -40,7 +41,8 @@ private:
     // PIE 상태
     UWorld* PIEWorld = nullptr;
     UWorld* EditorWorld = nullptr;
-       
+    float PIEBorderAlpha = 0.0f;  // 테두리 페이드 인/아웃용 알파값 (0.0 ~ 1.0)
+
     EViewportType ViewportType;
     FName ViewportName;
 
