@@ -159,17 +159,29 @@ void AActor::AddComponent(UActorComponent* Component)
     USceneComponent* SceneComp = nullptr;
     if (SceneComp = Cast<USceneComponent>(Component))
     {
-        if (!RootComponent)
+        USceneComponent* ParentComp = SceneComp->GetAttachParent();
+        if (ParentComp == nullptr)
         {
-            RootComponent = SceneComp;
-        }
-        else
-        {
-            SceneComp->SetupAttachment(RootComponent);
-        }
+            if (!RootComponent)
+            {
+                RootComponent = SceneComp;
+            }
+            else
+            {
+                SceneComp->SetupAttachment(RootComponent);
+            }
+        }       
     }
     Components.insert(Component);
     Component->SetOwner(this);
+}
+
+void AActor::RemoveComponent(UActorComponent* Component)
+{
+    if (Component == nullptr)
+    {
+        return;
+    }
 }
 
 // AActor 복제

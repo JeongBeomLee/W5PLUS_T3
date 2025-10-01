@@ -123,6 +123,7 @@ public:
     bool CanTickInPlayMode() const { return bCanEverTick && !bHiddenInGame; }
 
     void AddComponent(UActorComponent* Component);
+    void RemoveComponent(UActorComponent* Component);
 
 protected:
     TSet<UActorComponent*> Components;
