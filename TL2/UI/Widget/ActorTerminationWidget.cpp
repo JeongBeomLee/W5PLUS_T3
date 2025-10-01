@@ -8,6 +8,7 @@
 #include "SelectionManager.h"
 #include "SceneComponent.h"
 #include "StaticMeshComponent.h"
+#include "SimpleRotatingMovementComponent.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -59,7 +60,37 @@ void UActorTerminationWidget::Update()
 		}
 	}
 }
-
+void UActorTerminationWidget::AddComponentAtSelectedActor(UActorComponent* NewComponent)
+{
+	if (SelectedActor != nullptr)
+	{
+		USceneComponent* SceneComponent = Cast<USceneComponent>(NewComponent);
+		if (SceneComponent)
+		{
+			if (SelectedComponent != nullptr)
+			{
+				//해당 로직을 둘 곳을 몰라서 일단 여기둠
+				SceneComponent->SetupAttachment(SelectedComponent);
+				SelectedComponent->GetOwner()->AddComponent(SceneComponent);
+			}
+			else
+			{
+				//해당 로직을 둘 곳을 몰라서 일단 여기둠
+				SelectedActor->AddComponent(SceneComponent);
+			}
+		}
+		else
+		{
+			//액터로 바로 들어간다.
+			SelectedActor->AddComponent(NewComponent);
+		}
+		
+	}
+	else
+	{
+		UE_LOG("Selected Actor is Null");
+	}
+}
 void UActorTerminationWidget::RenderWidget()
 {
 	auto& InputManager = UInputManager::GetInstance();
@@ -81,39 +112,37 @@ void UActorTerminationWidget::RenderWidget()
 	}
 
 	ImGui::SameLine();
-	if (ImGui::Button("Add MeshComponent"))
+	if (ImGui::Button("Add Component"))
 	{
-		if (SelectedActor != nullptr)
+		ImGui::OpenPopup("ComponentType");
+	}
+	if (ImGui::BeginPopup("ComponentType"))
+	{
+		if(ImGui::Selectable("RotatingMovement"))
 		{
-			if (SelectedComponent != nullptr)
-			{
-				//해당 로직을 둘 곳을 몰라서 일단 여기둠
-				UStaticMeshComponent* StaticComponent = NewObject<UStaticMeshComponent>();
-				StaticComponent->SetupAttachment(SelectedComponent);
-				SelectedComponent->GetOwner()->AddComponent(StaticComponent);
-			}
-			else
-			{
-				//해당 로직을 둘 곳을 몰라서 일단 여기둠
-				UStaticMeshComponent* StaticComponent = NewObject<UStaticMeshComponent>();
-				SelectedActor->AddComponent(StaticComponent);
-			}
+			AddComponentAtSelectedActor(NewObject<USimpleRotatingMovementComponent>());
 		}
+		if (ImGui::Selectable("StaticMesh"))
+		{
+			AddComponentAtSelectedActor(NewObject<UStaticMeshComponent>());
+		}
+		ImGui::EndPopup();
 	}
 	ImGui::SameLine();
-	if (ImGui::Button("Remove Component"))
-	{
-		if (SelectedActor != nullptr)
-		{
-			if (SelectedComponent != nullptr)
-			{
-				//해당 로직을 둘 곳을 몰라서 일단 여기둠
-				UStaticMeshComponent* StaticComponent = NewObject<UStaticMeshComponent>();
-				StaticComponent->SetupAttachment(SelectedComponent);
-				SelectedComponent->GetOwner()->AddComponent(StaticComponent);
-			}
-		}
-	}
+	//if (ImGui::Button("Remove Component"))
+	//{
+	//	if (SelectedActor != nullptr && SelectedComponent != nullptr)
+	//	{	
+	//		//해당 로직을 둘 곳을 몰라서 일단 여기둠
+	//		UStaticMeshComponent* StaticComponent = NewObject<UStaticMeshComponent>();
+	//		StaticComponent->SetupAttachment(SelectedComponent);
+	//		SelectedComponent->GetOwner()->AddComponent(StaticComponent);
+	//	}
+	//	else
+	//	{
+	//		UE_LOG("Selected Component is Null");
+	//	}
+	//}
 	ImGui::Separator();
 }
 
