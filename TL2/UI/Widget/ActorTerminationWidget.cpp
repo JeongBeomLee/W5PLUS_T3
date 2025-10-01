@@ -89,7 +89,8 @@ void UActorTerminationWidget::RenderWidget()
 			{
 				//해당 로직을 둘 곳을 몰라서 일단 여기둠
 				UStaticMeshComponent* StaticComponent = NewObject<UStaticMeshComponent>();
-				SelectedActor->AddComponent(StaticComponent);
+				StaticComponent->SetupAttachment(SelectedComponent);
+				SelectedComponent->GetOwner()->AddComponent(StaticComponent);
 			}
 			else
 			{
@@ -99,7 +100,20 @@ void UActorTerminationWidget::RenderWidget()
 			}
 		}
 	}
-
+	ImGui::SameLine();
+	if (ImGui::Button("Remove Component"))
+	{
+		if (SelectedActor != nullptr)
+		{
+			if (SelectedComponent != nullptr)
+			{
+				//해당 로직을 둘 곳을 몰라서 일단 여기둠
+				UStaticMeshComponent* StaticComponent = NewObject<UStaticMeshComponent>();
+				StaticComponent->SetupAttachment(SelectedComponent);
+				SelectedComponent->GetOwner()->AddComponent(StaticComponent);
+			}
+		}
+	}
 	ImGui::Separator();
 }
 
