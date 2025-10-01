@@ -235,7 +235,7 @@ void USceneComponent::RenderDetail()
             float UniformScale = RelativeTransform.Scale3D.X;
             if (ImGui::DragFloat("Scale", &UniformScale, 0.01f, 0.01f, 10.0f))
             {
-                SetRelativeScale(UniformScale);
+                SetRelativeScale(FVector(UniformScale, UniformScale, UniformScale));
             }
         }
         else
