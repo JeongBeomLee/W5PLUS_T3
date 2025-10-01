@@ -11,6 +11,8 @@
 #include <ctime>
 #include <string>
 #include "ObjectIterator.h"
+// jft
+#include "BillboardComponent.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)
@@ -306,6 +308,9 @@ void UPrimitiveSpawnWidget::SpawnActors() const
         FTransform SpawnTransform(SpawnLocation, SpawnRotation, SpawnScaleVec);
 
         AStaticMeshActor* NewActor = World->SpawnActor<AStaticMeshActor>(SpawnTransform);
+        UBillboardComponent* NewBillboard = NewObject<UBillboardComponent>();
+        NewActor->AddComponent(NewBillboard);
+        NewBillboard->SetupAttachment(NewActor->GetRootComponent());
 
         if (NewActor)
         {

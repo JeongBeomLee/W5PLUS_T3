@@ -41,6 +41,8 @@ void UResourceManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* I
 
     CreateTextBillboardTexture();
 
+    CreateIconBillboardTexture();
+
     CreateDefaultShader();
     
 }
@@ -223,7 +225,14 @@ void UResourceManager::CreateTextBillboardMesh()
     UTextQuad* Mesh = NewObject<UTextQuad>();
     Mesh->Load(BillboardData, Device);
     Add<UTextQuad>("TextBillboard", Mesh);
+
+    // jft
+    UTextQuad* Mesh2 = NewObject<UTextQuad>();
+    Mesh2->Load(BillboardData, Device);
+    Add<UTextQuad>("IconBillboard", Mesh2);
+
     UMeshLoader::GetInstance().AddMeshData("TextBillboard", BillboardData);
+    UMeshLoader::GetInstance().AddMeshData("IconBillboard", BillboardData);
 }
 
 void UResourceManager::CreateGridMesh(int N, const FString& FilePath)
@@ -431,6 +440,8 @@ FString& UResourceManager::GetProperShader(const FString& InTextureName)
 void UResourceManager::InitTexToShaderMap()
 {
     TextureToShaderMap["TextBillboard.dds"] = "TextBillboard.hlsl";
+    // jft
+    TextureToShaderMap["Pawn_64x.dds"] = "TextBillboard.hlsl";
 }
 
 
@@ -439,6 +450,13 @@ void UResourceManager::CreateTextBillboardTexture()
     UTexture* TextBillboardTexture = NewObject<UTexture>();
     TextBillboardTexture->Load("TextBillboard.dds",Device);
     Add<UTexture>("TextBillboard.dds", TextBillboardTexture);
+}
+
+void UResourceManager::CreateIconBillboardTexture()
+{
+    UTexture* IconBillboardTexture = NewObject<UTexture>();
+    IconBillboardTexture->Load("Pawn_64x.dds", Device);
+    Add<UTexture>("Pawn_64x.dds", IconBillboardTexture);
 }
 
 

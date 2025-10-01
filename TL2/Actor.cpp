@@ -224,6 +224,7 @@ void AActor::AddComponent(UActorComponent* Component)
         RootComponent = Cast<USceneComponent>(Component);
         //Component->SetupAttachment(RootComponent);
     }
+    Component->SetOwner(this);
 }
 
 // AActor 복제
