@@ -229,12 +229,15 @@ void FViewportClient::MouseButtonDown(FViewport* Viewport, int32 X, int32 Y, int
 		{
 			return;
 		}
+		if (PickedActor)
+		{
+			PickedActor->SetIsPicked(false);
+		}
 		PickedActor = CPickingSystem::PerformGlobalBVHPicking(AllActors, Camera, ViewportMousePos, ViewportSize, ViewportOffset, PickingAspectRatio, Viewport);
-		//PickedActor = CPickingSystem::PerformViewportPicking(AllActors, Camera, ViewportMousePos, ViewportSize, ViewportOffset, PickingAspectRatio, Viewport);
-
 
 		if (PickedActor)
 		{
+			PickedActor->SetIsPicked(true);
 			if (PickedActor != USelectionManager::GetInstance().GetSelectedActor())
 			{
 				USelectionManager::GetInstance().SelectActor(PickedActor);

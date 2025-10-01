@@ -1,6 +1,6 @@
 ﻿#pragma once
 #include "MeshComponent.h"
-class UTextRenderComponent : public UPrimitiveComponent
+class UTextRenderComponent : public UMeshComponent
 {
 public:
 	DECLARE_CLASS(UTextRenderComponent, UMeshComponent)
