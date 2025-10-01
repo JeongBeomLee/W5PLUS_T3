@@ -492,6 +492,7 @@ void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, flo
 		// = MakeQuatFromAxisAngle(RotationAxis.X, Angle);
 		FQuat DeltaQuat{};
 		FQuat RelativeRotation = TargetComponent->GetRelativeRotation();
+		FVector TestEuler = RelativeRotation.ToEulerDegree();
 		if (CurrentSpace == EGizmoSpace::World)
 		{
 

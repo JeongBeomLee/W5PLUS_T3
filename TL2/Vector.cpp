@@ -113,15 +113,15 @@ const FMatrix FQuat::ToMatrix()const
 	return result;
 }
 
-FVector FQuat::GetRight() const
+FVector FQuat::GetForward() const
 {
 	return	FVector(1 - 2 * (Y * Y + Z * Z), 2 * (X * Y + Z * W), 2 * (X * Z - Y * W));
 }
-FVector FQuat::GetUp() const
+FVector FQuat::GetRight() const
 {
 	return	FVector(2 * (X * Y - Z * W), 1 - 2 * (X * X + Z * Z), 2 * (Y * Z + X * W));
 }
-FVector FQuat::GetForward() const
+FVector FQuat::GetUp() const
 {
 	return	FVector(2 * (X * Z + Y * W), 2 * (Y * Z - X * W), 1 - 2 * (X * X + Y * Y));
 }
