@@ -348,6 +348,10 @@ void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, flo
 	if (!TargetComponent || !Camera)
 		return;
 
+	if (GizmoAxis == 0)
+	{
+		return;
+	}
 	FVector2D MouseDelta = FVector2D(MouseDeltaX, MouseDeltaY);
 
 	FVector Axis{};
@@ -492,6 +496,7 @@ void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, flo
 		// = MakeQuatFromAxisAngle(RotationAxis.X, Angle);
 		FQuat DeltaQuat{};
 		FQuat RelativeRotation = TargetComponent->GetRelativeRotation();
+		FVector TestEuler = RelativeRotation.ToEulerDegree();
 		if (CurrentSpace == EGizmoSpace::World)
 		{
 
