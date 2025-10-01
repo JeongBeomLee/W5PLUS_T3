@@ -20,7 +20,7 @@ ACameraActor::ACameraActor()
     CameraComponent->SetupAttachment(RootComponent);
     Components.Add(CameraComponent);
 
-    if(EditorINI.count("CameraSpeed"))
+    if (EditorINI.count("CameraSpeed"))
     {
         try
         {
@@ -71,11 +71,9 @@ void ACameraActor::SetAnglesImmediate(float InPitchDeg, float InYawDeg)
 
     // 입력 경로와 동일한 축/순서로 쿼터니언 조립
     // 사용 중인 좌표계: Pitch = Y축, Yaw = Z축 (질문에서 언급하신 매핑)
-    const float RadPitch = DegreeToRadian(CameraPitchDeg);
-    const float RadYaw = DegreeToRadian(CameraYawDeg);
 
-    const FQuat QYaw = FQuat::FromAxisAngle(FVector{ 0, 0, 1 }, RadYaw);
-    const FQuat QPitch = FQuat::FromAxisAngle(FVector{ 0, 1, 0 }, RadPitch);
+    const FQuat QYaw = FQuat(FVector(0, 0, 1), CameraYawDeg);
+    const FQuat QPitch = FQuat(FVector(0, 1, 1), CameraPitchDeg);
 
     // 조립 순서도 입력 경로와 동일하게
     const FQuat FinalRot = QYaw * QPitch;
@@ -119,7 +117,7 @@ FMatrix ACameraActor::GetProjectionMatrix(float ViewportAspectRatio) const
 {
     return CameraComponent ? CameraComponent->GetProjectionMatrix(ViewportAspectRatio) : FMatrix::Identity();
 }
-FMatrix ACameraActor::GetProjectionMatrix(float ViewportAspectRatio,FViewport* Viewport) const
+FMatrix ACameraActor::GetProjectionMatrix(float ViewportAspectRatio, FViewport* Viewport) const
 {
     return CameraComponent ? CameraComponent->GetProjectionMatrix(ViewportAspectRatio, Viewport) : FMatrix::Identity();
 }
@@ -148,9 +146,9 @@ FVector ACameraActor::GetUp() const
 void ACameraActor::ProcessEditorCameraInput(float DeltaSeconds)
 {
     UInputManager& InputManager = UInputManager::GetInstance();
-    
+
     bool bRightButtonDown = InputManager.IsMouseButtonDown(RightButton);
-    
+
     // 우클릭 드래그로 카메라 회전 및 이동
     if (bRightButtonDown)
     {
@@ -165,9 +163,9 @@ void ACameraActor::ProcessCameraRotation(float DeltaSeconds)
 {
     UInputManager& InputManager = UInputManager::GetInstance();
     UUIManager& UIManager = UUIManager::GetInstance();
-    
+
     FVector2D MouseDelta = InputManager.GetMouseDelta();
-    
+
     if (MouseDelta.X == 0.0f && MouseDelta.Y == 0.0f) return;
 
     // 1) Pitch/Yaw만 누적 (Roll은 UIManager에서 관리하는 값으로 고정)
@@ -182,9 +180,9 @@ void ACameraActor::ProcessCameraRotation(float DeltaSeconds)
     float CurrentRoll = UIManager.GetStoredRoll();
 
     // 축별 개별 쿼터니언 생성
-    FQuat PitchQuat = FQuat::FromAxisAngle(FVector(0, 1, 0), DegreeToRadian(CameraPitchDeg));
-    FQuat YawQuat = FQuat::FromAxisAngle(FVector(0, 0, 1), DegreeToRadian(CameraYawDeg));
-    FQuat RollQuat = FQuat::FromAxisAngle(FVector(1, 0, 0), DegreeToRadian(CurrentRoll));
+    FQuat PitchQuat = FQuat(FVector(0, 1, 0), CameraPitchDeg);
+    FQuat YawQuat = FQuat(FVector(0, 0, 1), CameraYawDeg);
+    FQuat RollQuat = FQuat(FVector(1, 0, 0), CurrentRoll);
 
     // RzRxRy 순서로 회전 합성 (Roll(Z) → Pitch(X) → Yaw(Y))
     FQuat FinalRotation = YawQuat * PitchQuat * RollQuat;
@@ -204,7 +202,7 @@ static inline FVector RotateByQuat(const FVector& Vector, const FQuat& Quat)
 void ACameraActor::ProcessCameraMovement(float DeltaSeconds)
 {
     UInputManager& InputManager = UInputManager::GetInstance();
-    
+
     FVector Move(0, 0, 0);
 
     // 1) 카메라 회전(쿼터니언)에서 로컬 기저 추출 (스케일 영향 제거)

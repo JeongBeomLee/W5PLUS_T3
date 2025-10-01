@@ -35,39 +35,21 @@ public:
     void SetRelativeScale(const FVector& NewScale);
     FVector GetRelativeScale() const;
 
-    void AddRelativeLocation(const FVector& DeltaLocation);
-    void AddRelativeRotation(const FQuat& DeltaRotation);
-    void AddRelativeScale3D(const FVector& DeltaScale);
+    void SetWorldLocation(const FVector& WorldLocation);
+    FVector GetWorldLocation();
+    void SetRelativeTransform(const FTransform& InRelativeTransform);
+    FTransform GetRelativeTransform()const;
 
-    // ──────────────────────────────
-    // World Transform API
-    // ──────────────────────────────
-    FTransform GetWorldTransform() const;
-    void SetWorldTransform(const FTransform& W);
+    FVector GetForward();
+    FVector GetRight();
+    FVector GetUp();
 
-    void SetWorldLocation(const FVector& L);
-    FVector GetWorldLocation() const;
-
-    void SetWorldRotation(const FQuat& R);
-    FQuat GetWorldRotation() const;
-
-    void SetWorldScale(const FVector& S);
-    FVector GetWorldScale() const;
-
-    void AddWorldOffset(const FVector& Delta);
-    void AddWorldRotation(const FQuat& DeltaRot);
-    void SetWorldLocationAndRotation(const FVector& L, const FQuat& R);
-
-    void AddLocalOffset(const FVector& Delta);
-    void AddLocalRotation(const FQuat& DeltaRot);
-    void SetLocalLocationAndRotation(const FVector& L, const FQuat& R);
-
-    FMatrix GetWorldMatrix() const; // ToMatrixWithScale
+    const FMatrix& GetWorldMatrix(); // ToMatrixWithScale
 
     // ──────────────────────────────
     // Attach/Detach
     // ──────────────────────────────
-    void SetupAttachment(USceneComponent* InParent, EAttachmentRule Rule = EAttachmentRule::KeepWorld);
+    void SetupAttachment(USceneComponent* InParent);
     void DetachFromParent(bool bKeepWorld = true);
 
     // ──────────────────────────────
@@ -81,11 +63,11 @@ public:
     // 복제 시스템
     // ──────────────────────────────
     virtual UObject* Duplicate() override;
+protected:
+    virtual void RenderDetail() override;
 
 protected:
-    FVector RelativeLocation{ 0,0,0 };
-    FQuat   RelativeRotation;
-    FVector RelativeScale{ 1,1,1 };
+    FTransform RelativeTransform;
 
     
     // Hierarchy
@@ -93,7 +75,10 @@ protected:
     TArray<USceneComponent*> AttachChildren;
 
     // 로컬(부모 기준) 트랜스폼
-    FTransform RelativeTransform;
-
-    void UpdateRelativeTransform();
+    FMatrix WorldMatrix;
+private:
+    void TransformDirty();
+private:
+    bool bUniformScale = true;
+    bool bTransformDirty = true;
 };

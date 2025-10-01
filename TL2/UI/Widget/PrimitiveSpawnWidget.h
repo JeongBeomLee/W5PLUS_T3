@@ -22,13 +22,13 @@ public:
 
 private:
 	UUIManager* UIManager = nullptr;
-	
+
 	// Spawn 설정
 	int32 SelectedPrimitiveType = 0;
 	int32 NumberOfSpawn = 1;
 	float SpawnRangeMin = -5.0f;
 	float SpawnRangeMax = 5.0f;
-	
+
 	// 추가 옵션
 	bool bRandomRotation = true;
 	bool bRandomScale = true;
@@ -38,7 +38,7 @@ private:
 	// 메시 선택
 	mutable int32 SelectedMeshIndex = -1;
 	mutable TArray<FString> CachedMeshFilePaths;
-	
+
 	// 헬퍼 메서드
 	UWorld* GetCurrentWorld() const;
 	FVector GenerateRandomLocation() const;

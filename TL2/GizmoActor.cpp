@@ -31,14 +31,9 @@ AGizmoActor::AGizmoActor()
 	ArrowY->SetupAttachment(RootComponent);
 	ArrowZ->SetupAttachment(RootComponent);
 
-	ArrowX->SetRelativeScale({ 1, 1, 3 });
-	ArrowY->SetRelativeScale({ 1, 1, 3 });
-	ArrowZ->SetRelativeScale({ 1, 1, 3 });
-
-	if (ArrowX) ArrowX->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 0)));
-	if (ArrowY) ArrowY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 90)));
-	if (ArrowZ) ArrowZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, -90, 0)));
-
+	ArrowX->SetRelativeScale({ 1, 3, 1 });
+	ArrowY->SetRelativeScale({ 1, 3, 1 });
+	ArrowZ->SetRelativeScale({ 1, 3, 1 });
 
 	AddComponent(ArrowX);
 	AddComponent(ArrowY);
@@ -47,7 +42,7 @@ AGizmoActor::AGizmoActor()
 	GizmoArrowComponents.Add(ArrowY);
 	GizmoArrowComponents.Add(ArrowZ);
 
-	   //======= Rotate Component 생성 =======
+	//======= Rotate Component 생성 =======
 	RotateX = NewObject<UGizmoRotateComponent>();
 	RotateY = NewObject<UGizmoRotateComponent>();
 	RotateZ = NewObject<UGizmoRotateComponent>();
@@ -75,10 +70,6 @@ AGizmoActor::AGizmoActor()
 	GizmoRotateComponents.Add(RotateY);
 	GizmoRotateComponents.Add(RotateZ);
 
-	if (RotateX) RotateX->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 90, 0)));
-	if (RotateY) RotateY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(90, 0, 0)));
-	if (RotateZ) RotateZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 0)));
-
 	//======= Scale Component 생성 =======
 	ScaleX = NewObject<UGizmoScaleComponent>();
 	ScaleY = NewObject<UGizmoScaleComponent>();
@@ -99,10 +90,6 @@ AGizmoActor::AGizmoActor()
 	ScaleX->SetRelativeScale({ 0.02f, 0.02f, 0.02f });
 	ScaleY->SetRelativeScale({ 0.02f, 0.02f, 0.02f });
 	ScaleZ->SetRelativeScale({ 0.02f, 0.02f, 0.02f });
-
-	if (ScaleX) ScaleX->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 90, 0)));
-	if (ScaleY) ScaleY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(-90, 0, 0)));
-	if (ScaleZ) ScaleZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 0)));
 
 	AddComponent(ScaleX);
 	AddComponent(ScaleY);
@@ -128,23 +115,24 @@ void AGizmoActor::Tick(float DeltaSeconds)
 	// 컴포넌트 활성화 상태 업데이트    
 	if (SelectionManager->HasSelection() && CameraActor)
 	{
-		TargetActor = SelectionManager->GetSelectedActor();
+		AActor* SelectionActor = SelectionManager->GetSelectedActor();
+		USceneComponent* SelectionComponent = SelectionManager->GetSelectedComponent();
+		TargetComponent = SelectionComponent == nullptr ? SelectionActor->GetRootComponent() : SelectionComponent;
 
 		// 기즈모 위치를 선택된 액터 위치로 업데이트
-		if (TargetActor)
+		if (TargetComponent)
 		{
-			SetSpaceWorldMatrix(CurrentSpace, TargetActor);
-			SetActorLocation(TargetActor->GetActorLocation());
+			SetSpaceWorldMatrix(CurrentSpace, TargetComponent);
+			SetActorLocation(TargetComponent->GetWorldLocation());
 		}
 	}
 	else
 	{
-		TargetActor = nullptr;
+		TargetComponent = nullptr;
 	}
 	UpdateComponentVisibility();
 }
-void AGizmoActor::Render(ACameraActor* Camera, FViewport* Viewport)
-{
+void AGizmoActor::Render(ACameraActor* Camera, FViewport* Viewport) {
 
 	UpdateConstantScreenScale(Camera, Viewport);
 
@@ -166,6 +154,8 @@ void AGizmoActor::Render(ACameraActor* Camera, FViewport* Viewport)
 	FVector2D ViewportOffset(static_cast<float>(Viewport->GetStartX()), static_cast<float>(Viewport->GetStartY()));
 	FVector2D ViewportMousePos(static_cast<float>(UInputManager::GetInstance().GetMousePosition().X) + ViewportOffset.X,
 		static_cast<float>(UInputManager::GetInstance().GetMousePosition().Y) + ViewportOffset.Y);
+
+
 
 	for (int32 i = 0; i < Components->Num(); ++i)
 	{
@@ -227,19 +217,22 @@ EGizmoMode  AGizmoActor::GetMode()
 	return CurrentMode;
 }
 
-void AGizmoActor::SetSpaceWorldMatrix(EGizmoSpace NewSpace, AActor* PickedActor)
+void AGizmoActor::SetSpaceWorldMatrix(EGizmoSpace NewSpace, USceneComponent* PickedComponent)
 {
 	SetSpace(NewSpace);
 
 	if (NewSpace == EGizmoSpace::World)
 	{
 
+		RootComponent->SetRelativeTransform(FTransform(PickedComponent->GetWorldLocation(), FQuat(), FVector(1, 1, 1)));
 		// 월드 고정 → 기즈모 축은 항상 X/Y/Z
 		   // 월드 고정 → 기즈모 축은 항상 X/Y/Z
-		if (ArrowX) ArrowX->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 0)));
-		if (ArrowY) ArrowY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 90)));
-		if (ArrowZ) ArrowZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, -90, 0)));
+		//Arrow = 모델이 -y를 바라보고 있음
+		if (ArrowX) ArrowX->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 90)));
+		if (ArrowY) ArrowY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 180)));
+		if (ArrowZ) ArrowZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(-90, 0, 0)));
 
+		//Scale = 모델이 +z를 바라보고 있음
 		if (ScaleX) ScaleX->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 90, 0)));
 		if (ScaleY) ScaleY->SetRelativeRotation(FQuat::MakeFromEuler(FVector(-90, 0, 0)));
 		if (ScaleZ) ScaleZ->SetRelativeRotation(FQuat::MakeFromEuler(FVector(0, 0, 0)));
@@ -250,19 +243,20 @@ void AGizmoActor::SetSpaceWorldMatrix(EGizmoSpace NewSpace, AActor* PickedActor)
 	}
 	else if (NewSpace == EGizmoSpace::Local)
 	{
-		if (!PickedActor)
+		if (!PickedComponent)
 			return;
 
 		// 타겟 액터 회전 가져오기
-		FQuat TargetRot = PickedActor->GetActorRotation();
+		RootComponent->SetRelativeLocation(PickedComponent->GetWorldLocation());
 
-		 // ───────── Translate Gizmo ─────────
-		// ArrowX->AddRelativeRotation(AC);
-			// 월드 고정 → 기즈모 축은 항상 X/Y/Z
-		if (ArrowX) ArrowX->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, 0, 0)));
-		if (ArrowY) ArrowY->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, 0, 90)));
-		if (ArrowZ) ArrowZ->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, -90, 0)));
+		FQuat TargetRot = PickedComponent->GetRelativeRotation();
 
+		//Arrow = 모델이 -y를 바라보고 있음
+		if (ArrowX) ArrowX->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, 0, 90)));
+		if (ArrowY) ArrowY->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, 0, 180)));
+		if (ArrowZ) ArrowZ->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(-90, 0, 0)));
+
+		//Scale = 모델이 +z를 바라보고 있음
 		if (ScaleX) ScaleX->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, 90, 0)));
 		if (ScaleY) ScaleY->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(-90, 0, 0)));
 		if (ScaleZ) ScaleZ->SetRelativeRotation(TargetRot * FQuat::MakeFromEuler(FVector(0, 0, 0)));
@@ -349,12 +343,12 @@ static FVector2D GetStableAxisDirection(const FVector& WorldAxis, const ACameraA
 	return FVector2D(1.0f, 0.0f);
 }
 
-void AGizmoActor::OnDrag(AActor* Target, uint32 GizmoAxis, float MouseDeltaX, float MouseDeltaY, const ACameraActor* Camera, FViewport* Viewport)
+void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, float MouseDeltaX, float MouseDeltaY, const ACameraActor* Camera, FViewport* Viewport)
 {
-    if (!Target || !Camera )
-        return;
+	if (!TargetComponent || !Camera)
+		return;
 
-    FVector2D MouseDelta = FVector2D(MouseDeltaX, MouseDeltaY);
+	FVector2D MouseDelta = FVector2D(MouseDeltaX, MouseDeltaY);
 
 	FVector Axis{};
 	FVector GizmoPosition = GetActorLocation();
@@ -373,9 +367,9 @@ void AGizmoActor::OnDrag(AActor* Target, uint32 GizmoAxis, float MouseDeltaX, fl
 	{
 		switch (GizmoAxis)
 		{
-		case 1: Axis = Target->GetActorRight();   break; // Local X
-		case 2: Axis = Target->GetActorForward(); break; // Local Y
-		case 3: Axis = Target->GetActorUp();      break; // Local Z
+		case 1: Axis = TargetComponent->GetForward();   break; // Local X
+		case 2: Axis = TargetComponent->GetRight(); break; // Local Y
+		case 3: Axis = TargetComponent->GetUp();      break; // Local Z
 		}
 	}
 
@@ -384,36 +378,36 @@ void AGizmoActor::OnDrag(AActor* Target, uint32 GizmoAxis, float MouseDeltaX, fl
 	{
 	case EGizmoMode::Translate:
 	{
-        FVector2D ScreenAxis = GetStableAxisDirection(Axis, Camera);
-        float px = (MouseDelta.X * ScreenAxis.X + MouseDelta.Y * ScreenAxis.Y);
-        float h = Viewport ? static_cast<float>(Viewport->GetSizeY()) : UInputManager::GetInstance().GetScreenSize().Y;
-        if (h <= 0.0f) h = 1.0f;
-        float w = Viewport ? static_cast<float>(Viewport->GetSizeX()) : UInputManager::GetInstance().GetScreenSize().X;
-        float aspect = w / h;
-        FMatrix Proj = Camera->GetProjectionMatrix(aspect,Viewport);
-        bool bOrtho = std::fabs(Proj.M[3][3] - 1.0f) < KINDA_SMALL_NUMBER;
-        float worldPerPixel = 0.0f;
-        if (bOrtho)
-        {
-            float halfH = 1.0f / Proj.M[1][1];
-            worldPerPixel = (2.0f * halfH) / h;
-        }
-        else
-        {
-            float yScale = Proj.M[1][1];
-            FVector camPos = Camera->GetActorLocation();
-            FVector gizPos = GetActorLocation();
-            FVector camF = Camera->GetForward();
-            float z = FVector::Dot(gizPos - camPos, camF);
-            if (z < 1.0f) z = 1.0f;
-            worldPerPixel = (2.0f * z) / (h * yScale);
-        }
-	/*	float zoomFactor = Camera->GetCameraComponent()->GetZoomFactor();
-worldPerPixel *= zoomFactor;*/ 
+		FVector2D ScreenAxis = GetStableAxisDirection(Axis, Camera);
+		float px = (MouseDelta.X * ScreenAxis.X + MouseDelta.Y * ScreenAxis.Y);
+		float h = Viewport ? static_cast<float>(Viewport->GetSizeY()) : UInputManager::GetInstance().GetScreenSize().Y;
+		if (h <= 0.0f) h = 1.0f;
+		float w = Viewport ? static_cast<float>(Viewport->GetSizeX()) : UInputManager::GetInstance().GetScreenSize().X;
+		float aspect = w / h;
+		FMatrix Proj = Camera->GetProjectionMatrix(aspect, Viewport);
+		bool bOrtho = std::fabs(Proj.M[3][3] - 1.0f) < KINDA_SMALL_NUMBER;
+		float worldPerPixel = 0.0f;
+		if (bOrtho)
+		{
+			float halfH = 1.0f / Proj.M[1][1];
+			worldPerPixel = (2.0f * halfH) / h;
+		}
+		else
+		{
+			float yScale = Proj.M[1][1];
+			FVector camPos = Camera->GetActorLocation();
+			FVector gizPos = GetActorLocation();
+			FVector camF = Camera->GetForward();
+			float z = FVector::Dot(gizPos - camPos, camF);
+			if (z < 1.0f) z = 1.0f;
+			worldPerPixel = (2.0f * z) / (h * yScale);
+		}
+		/*	float zoomFactor = Camera->GetCameraComponent()->GetZoomFactor();
+	worldPerPixel *= zoomFactor;*/
 
-        float Movement = px * worldPerPixel;
-        FVector CurrentLocation = Target->GetActorLocation();
-        Target->SetActorLocation(CurrentLocation + Axis * Movement);
+		float Movement = px * worldPerPixel;
+		FVector CurrentLocation = TargetComponent->GetWorldLocation();
+		TargetComponent->SetWorldLocation(CurrentLocation + Axis * Movement);
 
 		break;
 	}
@@ -433,9 +427,9 @@ worldPerPixel *= zoomFactor;*/
 		{
 			switch (GizmoAxis)
 			{
-			case 1: Axis = Target->GetActorRight();   break; // Local X
-			case 2: Axis = Target->GetActorForward(); break; // Local Y
-			case 3: Axis = Target->GetActorUp();      break; // Local Z
+			case 1: Axis = TargetComponent->GetForward();   break; // Local X
+			case 2: Axis = TargetComponent->GetRight(); break; // Local Y
+			case 3: Axis = TargetComponent->GetUp();      break; // Local Z
 			}
 		}
 
@@ -445,7 +439,7 @@ worldPerPixel *= zoomFactor;*/
 		if (h <= 0.0f) h = 1.0f;
 		float w = Viewport ? static_cast<float>(Viewport->GetSizeX()) : UInputManager::GetInstance().GetScreenSize().X;
 		float aspect = w / h;
-		FMatrix Proj = Camera->GetProjectionMatrix(aspect,Viewport);
+		FMatrix Proj = Camera->GetProjectionMatrix(aspect, Viewport);
 		bool bOrtho = std::fabs(Proj.M[3][3] - 1.0f) < KINDA_SMALL_NUMBER;
 		float worldPerPixel = 0.0f;
 		if (bOrtho)
@@ -464,7 +458,7 @@ worldPerPixel *= zoomFactor;*/
 			worldPerPixel = (2.0f * z) / (h * yScale);
 		}
 		float Movement = px * worldPerPixel;
-		FVector NewScale = Target->GetActorScale();
+		FVector NewScale = TargetComponent->GetRelativeScale();
 
 		// Apply movement to the correct local axis based on which gizmo was dragged
 		switch (GizmoAxis)
@@ -480,13 +474,13 @@ worldPerPixel *= zoomFactor;*/
 			break;
 		}
 
-		Target->SetActorScale(NewScale);
+		TargetComponent->SetRelativeScale(NewScale);
 
 		break;
 	}
 	case EGizmoMode::Rotate:
 	{
-		float RotationSpeed = 0.005f;
+		float RotationSpeed = 0.5f;
 		float DeltaAngleX = MouseDeltaX * RotationSpeed;
 		float DeltaAngleY = MouseDeltaY * RotationSpeed;
 
@@ -497,7 +491,7 @@ worldPerPixel *= zoomFactor;*/
 
 		// = MakeQuatFromAxisAngle(RotationAxis.X, Angle);
 		FQuat DeltaQuat{};
-		FQuat CurrentRot = Target->GetActorRotation();
+		FQuat RelativeRotation = TargetComponent->GetRelativeRotation();
 		if (CurrentSpace == EGizmoSpace::World)
 		{
 
@@ -506,33 +500,33 @@ worldPerPixel *= zoomFactor;*/
 			case 1: // X축 회전
 			{
 				// 마우스 X → 카메라 Up 축 기반
-				FQuat RotByX = MakeQuatFromAxisAngle(FVector(-1, 0, 0), DeltaAngleX);
+				FQuat RotByX = FQuat(FVector(-1, 0, 0), DeltaAngleX);
 				// 마우스 Y → 카메라 Right 축 기반
-				FQuat RotByY = MakeQuatFromAxisAngle(FVector(-1, 0, 0), DeltaAngleY);
+				FQuat RotByY = FQuat(FVector(-1, 0, 0), DeltaAngleY);
 				DeltaQuat = RotByX * RotByY;
 				break;
 			}
 			case 2: // Y축 회전
 			{
-				FQuat RotByX = MakeQuatFromAxisAngle(FVector(0, -1, 0), DeltaAngleX);
-				FQuat RotByY = MakeQuatFromAxisAngle(FVector(0, -1, 0), DeltaAngleY);
+				FQuat RotByX = FQuat(FVector(0, -1, 0), DeltaAngleX);
+				FQuat RotByY = FQuat(FVector(0, -1, 0), DeltaAngleY);
 				DeltaQuat = RotByX * RotByY;
 				break;
 			}
 			case 3: // Z축 회전
 			{
-				FQuat RotByX = MakeQuatFromAxisAngle(FVector(0, 0, -1), DeltaAngleX);
-				FQuat RotByY = MakeQuatFromAxisAngle(FVector(0, 0, -1), DeltaAngleY);
+				FQuat RotByX = FQuat(FVector(0, 0, -1), DeltaAngleX);
+				FQuat RotByY = FQuat(FVector(0, 0, -1), DeltaAngleY);
 				DeltaQuat = RotByX * RotByY;
 				break;
 			}
 			}
-			FQuat NewRot = DeltaQuat * CurrentRot; // 월드 기준 회전
-			Target->SetActorRotation(NewRot);
+			FQuat NewRot = DeltaQuat * RelativeRotation; // 월드 기준 회전
+			TargetComponent->SetRelativeRotation(NewRot);
 		}
 		else
 		{
-			float RotationSpeed = 0.005f;
+			float RotationSpeed = 0.5f;
 			float DeltaAngleX = MouseDeltaX * RotationSpeed;
 			float DeltaAngleY = MouseDeltaY * RotationSpeed;
 
@@ -541,70 +535,66 @@ worldPerPixel *= zoomFactor;*/
 			// 로컬 모드일 경우 축을 Target 로컬 축으로
 			FVector RotationAxis = -Axis.GetSafeNormal();
 
-			//FQuat DeltaQuat = MakeQuatFromAxisAngle(RotationAxis, Angle);
-
-			FQuat CurrentRot = Target->GetActorRotation();
-
 			switch (GizmoAxis)
 			{
 			case 1: // X축 회전
 			{
 				// 마우스 X → 카메라 Up 축 기반
-				FQuat RotByX = MakeQuatFromAxisAngle(RotationAxis, DeltaAngleX);
+				FQuat RotByX = FQuat(RotationAxis, DeltaAngleX);
 				// 마우스 Y → 카메라 Right 축 기반
-				FQuat RotByY = MakeQuatFromAxisAngle(RotationAxis, DeltaAngleY);
+				FQuat RotByY = FQuat(RotationAxis, DeltaAngleY);
 				DeltaQuat = RotByX * RotByY;
 				break;
 			}
 			case 2: // Y축 회전
 			{
-				FQuat RotByX = MakeQuatFromAxisAngle(RotationAxis, DeltaAngleX);
-				FQuat RotByY = MakeQuatFromAxisAngle(RotationAxis, DeltaAngleY);
+				FQuat RotByX = FQuat(RotationAxis, DeltaAngleX);
+				FQuat RotByY = FQuat(RotationAxis, DeltaAngleY);
 				DeltaQuat = RotByX * RotByY;
 				break;
 			}
 			case 3: // Z축 회전
 			{
-				FQuat RotByX = MakeQuatFromAxisAngle(RotationAxis, DeltaAngleX);
-				FQuat RotByY = MakeQuatFromAxisAngle(RotationAxis, DeltaAngleY);
+				FQuat RotByX = FQuat(RotationAxis, DeltaAngleX);
+				FQuat RotByY = FQuat(RotationAxis, DeltaAngleY);
 				DeltaQuat = RotByX * RotByY;
 				break;
 			}
 			}
 
-			FQuat NewRot = DeltaQuat * CurrentRot; // 월드 기준 회전
-
-			Target->SetActorRotation(NewRot);
-
-
+			FQuat NewRot = DeltaQuat * RelativeRotation; // 월드 기준 회전
+			TargetComponent->SetRelativeRotation(NewRot);
 			break;
 		}
 	}
 	}
 }
 
+
+
 void AGizmoActor::UpdateGizmoPosition()
 {
-	if (!TargetActor) return;
-
-	SetActorLocation(TargetActor->GetActorLocation());
+	if (!TargetComponent) return;
+	SetActorLocation(TargetComponent->GetWorldLocation());
 }
 
 void AGizmoActor::ProcessGizmoInteraction(ACameraActor* Camera, FViewport* Viewport, float MousePositionX, float MousePositionY)
 {
-	if (!TargetActor || !Camera) return;
-	
-    UpdateConstantScreenScale(Camera, Viewport);
+	if (!TargetComponent || !Camera) return;
 
-    ProcessGizmoModeSwitch();
+
+	UpdateConstantScreenScale(Camera, Viewport);
+
+	ProcessGizmoModeSwitch();
 
 	// 기즈모 드래그
 	ProcessGizmoDragging(Camera, Viewport, MousePositionX, MousePositionY);
 
-	ProcessGizmoHovering(Camera,  Viewport,  MousePositionX, MousePositionY);
+	ProcessGizmoHovering(Camera, Viewport, MousePositionX, MousePositionY);
+
 }
 
-void AGizmoActor::ProcessGizmoHovering(ACameraActor* Camera,FViewport* Viewport ,float MousePositionX, float MousePositionY )
+void AGizmoActor::ProcessGizmoHovering(ACameraActor* Camera, FViewport* Viewport, float MousePositionX, float MousePositionY)
 {
 	if (!Camera) return;
 
@@ -612,14 +602,14 @@ void AGizmoActor::ProcessGizmoHovering(ACameraActor* Camera,FViewport* Viewport 
 	FVector2D ViewportOffset(static_cast<float>(Viewport->GetStartX()), static_cast<float>(Viewport->GetStartY()));
 	FVector2D ViewportMousePos(static_cast<float>(MousePositionX) + ViewportOffset.X,
 		static_cast<float>(MousePositionY) + ViewportOffset.Y);
-	if(!bIsDragging)
-	GizmoAxis = CPickingSystem::IsHoveringGizmoForViewport(this, Camera, ViewportMousePos, ViewportSize, ViewportOffset, Viewport);
+	if (!bIsDragging)
+		GizmoAxis = CPickingSystem::IsHoveringGizmoForViewport(this, Camera, ViewportMousePos, ViewportSize, ViewportOffset, Viewport);
 
 	if (GizmoAxis > 0)//기즈모 축이 0이상이라면 선택 된것 
 	{
 		bIsHovering = true;
 	}
-	else 
+	else
 	{
 		bIsHovering = false;
 	}
@@ -628,23 +618,23 @@ void AGizmoActor::ProcessGizmoHovering(ACameraActor* Camera,FViewport* Viewport 
 
 void AGizmoActor::ProcessGizmoDragging(ACameraActor* Camera, FViewport* Viewport, float MousePositionX, float MousePositionY)
 {
-	if (!TargetActor || !Camera ) return;
+	if (!TargetComponent || !Camera) return;
 
 	if (InputManager->IsMouseButtonDown(LeftButton))
 	{
 		FVector2D MouseDelta = InputManager->GetMouseDelta();
 		if ((MouseDelta.X * MouseDelta.X + MouseDelta.Y * MouseDelta.Y) > 0.0f)
 		{
-            OnDrag(TargetActor, GizmoAxis, MouseDelta.X, MouseDelta.Y, CameraActor, Viewport);
+			OnDrag(TargetComponent, GizmoAxis, MouseDelta.X, MouseDelta.Y, CameraActor, Viewport);
 			bIsDragging = true;
-			SetActorLocation(TargetActor->GetActorLocation());
+			SetActorLocation(TargetComponent->GetWorldLocation());
 		}
 	}
 	if (InputManager->IsMouseButtonReleased(LeftButton))
 	{
 		bIsDragging = false;
 		GizmoAxis = 0;
-		SetSpaceWorldMatrix(CurrentSpace, TargetActor);
+		SetSpaceWorldMatrix(CurrentSpace, TargetComponent);
 	}
 }
 
@@ -686,36 +676,36 @@ void AGizmoActor::UpdateComponentVisibility()
 
 void AGizmoActor::UpdateConstantScreenScale(ACameraActor* Camera, FViewport* Viewport)
 {
-    if (!Camera || !Viewport) return;
-    float h = static_cast<float>(Viewport->GetSizeY());
-    if (h <= 0.0f) h = 1.0f;
-    float w = static_cast<float>(Viewport->GetSizeX());
-    float aspect = w / h;
-    FMatrix Proj = Camera->GetProjectionMatrix(aspect,Viewport);
-    bool bOrtho = std::fabs(Proj.M[3][3] - 1.0f) < KINDA_SMALL_NUMBER;
-    float targetPx = 30.0f;
-    float scale = 1.0f;
-    if (bOrtho)
-    {
-        float halfH = 1.0f / Proj.M[1][1];
-        scale = (targetPx * 2.0f * halfH) / h;
-    }
-    else
-    {
-        float yScale = Proj.M[1][1];
-        FVector camPos = Camera->GetActorLocation();
-        FVector gizPos = GetActorLocation();
-        FVector camF = Camera->GetForward();
-        float z = FVector::Dot(gizPos - camPos, camF);
-        if (z < 1.0f) z = 1.0f;
-        scale = (targetPx * 2.0f * z) / (h * yScale);
-    }
-    if (scale < 0.001f) scale = 0.001f;
-    if (scale > 10000.0f) scale = 10000.0f;
-    SetActorScale(FVector(scale, scale, scale));
+	if (!Camera || !Viewport) return;
+	float h = static_cast<float>(Viewport->GetSizeY());
+	if (h <= 0.0f) h = 1.0f;
+	float w = static_cast<float>(Viewport->GetSizeX());
+	float aspect = w / h;
+	FMatrix Proj = Camera->GetProjectionMatrix(aspect, Viewport);
+	bool bOrtho = std::fabs(Proj.M[3][3] - 1.0f) < KINDA_SMALL_NUMBER;
+	float targetPx = 30.0f;
+	float scale = 1.0f;
+	if (bOrtho)
+	{
+		float halfH = 1.0f / Proj.M[1][1];
+		scale = (targetPx * 2.0f * halfH) / h;
+	}
+	else
+	{
+		float yScale = Proj.M[1][1];
+		FVector camPos = Camera->GetActorLocation();
+		FVector gizPos = GetActorLocation();
+		FVector camF = Camera->GetForward();
+		float z = FVector::Dot(gizPos - camPos, camF);
+		if (z < 1.0f) z = 1.0f;
+		scale = (targetPx * 2.0f * z) / (h * yScale);
+	}
+	if (scale < 0.001f) scale = 0.001f;
+	if (scale > 10000.0f) scale = 10000.0f;
+	SetActorScale(FVector(scale, scale, scale));
 }
 
-void AGizmoActor::OnDrag(AActor* Target, uint32 GizmoAxis, float MouseDeltaX, float MouseDeltaY, const ACameraActor* Camera)
+void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, float MouseDeltaX, float MouseDeltaY, const ACameraActor* Camera)
 {
-    OnDrag(Target, GizmoAxis, MouseDeltaX, MouseDeltaY, Camera, nullptr);
+	OnDrag(TargetComponent, GizmoAxis, MouseDeltaX, MouseDeltaY, Camera, nullptr);
 }

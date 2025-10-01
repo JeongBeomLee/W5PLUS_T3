@@ -10,6 +10,7 @@
 #include "../UIManager.h"
 #include "../../SceneLoader.h"
 #include "../../Object.h"
+#include "SelectionManager.h"
 
 USceneIOWidget::USceneIOWidget()
 	: UWidget("Scene IO Widget")
@@ -41,10 +42,10 @@ void USceneIOWidget::RenderWidget()
 {
 	ImGui::Text("Scene Management");
 	ImGui::Separator();
-	
+
 	RenderSaveLoadSection();
 	ImGui::Spacing();
-	
+
 	RenderStatusMessage();
 }
 
@@ -86,7 +87,7 @@ void USceneIOWidget::RenderSaveLoadSection()
 		SaveLevel("");
 	}
 
-	
+
 	if (ImGui::Button("Load Scene", ImVec2(110, 25)))
 	{
 		// 유효성 검사
@@ -157,10 +158,10 @@ void USceneIOWidget::RenderStatusMessage()
 {
 	if (StatusMessageTimer > 0.0f)
 	{
-		ImVec4 color = bIsStatusError ? 
+		ImVec4 color = bIsStatusError ?
 			ImVec4(1.0f, 0.4f, 0.4f, 1.0f) :  // Red for errors
 			ImVec4(0.0f, 1.0f, 0.0f, 1.0f);   // Green for success
-			
+
 		ImGui::TextColored(color, "%s", StatusMessage.c_str());
 	}
 	else
@@ -213,7 +214,7 @@ void USceneIOWidget::SaveLevel(const FString& InFilePath)
 			// 파일 경로에서 베이스 이름만 추출하여 넘김
 			FString SceneName = InFilePath;
 			size_t LastSlash = SceneName.find_last_of("\\/");
-			if (LastSlash != std::string::npos) 
+			if (LastSlash != std::string::npos)
 			{
 				SceneName = SceneName.substr(LastSlash + 1);
 			}
@@ -266,7 +267,7 @@ void USceneIOWidget::LoadLevel(const FString& InFilePath)
 
 		// 로드 직전: Transform 위젯/선택 초기화
 		UUIManager::GetInstance().ClearTransformWidgetSelection();
-		UUIManager::GetInstance().ResetPickedActor();
+		USelectionManager::GetInstance().ClearSelection();
 
 		// 1) 선택된 파일 경로에서 NextUUID 읽기
 		// Save 포맷상 NextUUID는 "마지막으로 사용된 UUID" → 다음 값으로 쓰려면 +1 필요
@@ -312,7 +313,7 @@ void USceneIOWidget::CreateNewLevel()
 
 		// 로드 직전: Transform 위젯/선택 초기화
 		UUIManager::GetInstance().ClearTransformWidgetSelection();
-		UUIManager::GetInstance().ResetPickedActor();
+		USelectionManager::GetInstance().ClearSelection();
 
 		// 새 씬 생성 (이름 입력 없이)
 		CurrentWorld->CreateNewScene();
@@ -334,38 +335,38 @@ void USceneIOWidget::CreateNewLevel()
  */
 path USceneIOWidget::OpenSaveFileDialog()
 {
-     OPENFILENAMEW ofn;
-     wchar_t szFile[260] = {};
-   
-     // 기본 파일명 설정
-     wcscpy_s(szFile, L"");
-   
-     // Initialize OPENFILENAME
-     ZeroMemory(&ofn, sizeof(ofn));
-     ofn.lStructSize = sizeof(ofn);
-     ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
-     ofn.lpstrFile = szFile;
-     ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
-     ofn.lpstrFilter = L"JSON Files\0*.scene\0All Files\0*.*\0";
-     ofn.nFilterIndex = 1;
-     ofn.lpstrFileTitle = nullptr;
-     ofn.nMaxFileTitle = 0;
-     ofn.lpstrInitialDir = nullptr;
-     ofn.lpstrTitle = L"Save Level File";
-	 ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
-     ofn.lpstrDefExt = L"json";
-   
-     // Modal 다이얼로그 표시 - 이 함수가 리턴될 때까지 다른 입력 차단
-     UE_LOG("SceneIO: Opening Save Dialog (Modal)...");
-   
-     if (GetSaveFileNameW(&ofn) == TRUE)
-     {
-         UE_LOG("SceneIO: Save Dialog Closed");
-         return path(szFile);
-     }
-   
-    UE_LOG("SceneIO: Save Dialog Closed");
-   return L"";
+	OPENFILENAMEW ofn;
+	wchar_t szFile[260] = {};
+
+	// 기본 파일명 설정
+	wcscpy_s(szFile, L"");
+
+	// Initialize OPENFILENAME
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
+	ofn.lpstrFilter = L"JSON Files\0*.scene\0All Files\0*.*\0";
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = nullptr;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = nullptr;
+	ofn.lpstrTitle = L"Save Level File";
+	ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
+	ofn.lpstrDefExt = L"json";
+
+	// Modal 다이얼로그 표시 - 이 함수가 리턴될 때까지 다른 입력 차단
+	UE_LOG("SceneIO: Opening Save Dialog (Modal)...");
+
+	if (GetSaveFileNameW(&ofn) == TRUE)
+	{
+		UE_LOG("SceneIO: Save Dialog Closed");
+		return path(szFile);
+	}
+
+	UE_LOG("SceneIO: Save Dialog Closed");
+	return L"";
 }
 
 /**
@@ -374,31 +375,31 @@ path USceneIOWidget::OpenSaveFileDialog()
  */
 path USceneIOWidget::OpenLoadFileDialog()
 {
-    OPENFILENAMEW ofn;
-    wchar_t szFile[260] = {};
+	OPENFILENAMEW ofn;
+	wchar_t szFile[260] = {};
 
-    // Initialize OPENFILENAME
-    ZeroMemory(&ofn, sizeof(ofn));
-    ofn.lStructSize = sizeof(ofn);
-    ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
-    ofn.lpstrFile = szFile;
-    ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
-    ofn.lpstrFilter = L"JSON Files\0*.scene\0All Files\0*.*\0";
-    ofn.nFilterIndex = 1;
-    ofn.lpstrFileTitle = nullptr;
-    ofn.nMaxFileTitle = 0;
-    ofn.lpstrInitialDir = nullptr;
-    ofn.lpstrTitle = L"Load Level File";
+	// Initialize OPENFILENAME
+	ZeroMemory(&ofn, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = GetActiveWindow();  // 현재 활성 윈도우를 부모로 설정
+	ofn.lpstrFile = szFile;
+	ofn.nMaxFile = sizeof(szFile) / sizeof(wchar_t);
+	ofn.lpstrFilter = L"JSON Files\0*.scene\0All Files\0*.*\0";
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = nullptr;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = nullptr;
+	ofn.lpstrTitle = L"Load Level File";
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_EXPLORER | OFN_HIDEREADONLY | OFN_NOCHANGEDIR;
 
-    UE_LOG("SceneIO: Opening Load Dialog (Modal)...");
+	UE_LOG("SceneIO: Opening Load Dialog (Modal)...");
 
-    if (GetOpenFileNameW(&ofn) == TRUE)
-    {
-        UE_LOG("SceneIO: Load Dialog Closed");
-        return path(szFile);
-    }
+	if (GetOpenFileNameW(&ofn) == TRUE)
+	{
+		UE_LOG("SceneIO: Load Dialog Closed");
+		return path(szFile);
+	}
 
-    UE_LOG("SceneIO: Load Dialog Closed");
-    return L"";
+	UE_LOG("SceneIO: Load Dialog Closed");
+	return L"";
 }

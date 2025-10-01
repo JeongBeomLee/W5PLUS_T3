@@ -14,19 +14,16 @@ void UPrimitiveComponent::Serialize(bool bIsLoading, FPrimitiveData& InOut)
     if (bIsLoading)
     {
         // FPrimitiveData -> 컴포넌트 월드 트랜스폼
-        FTransform WT = GetWorldTransform();
-        WT.Translation = InOut.Location;
-        WT.Rotation = SceneRotUtil::QuatFromEulerZYX_Deg(InOut.Rotation);
-        WT.Scale3D = InOut.Scale;
-        SetWorldTransform(WT);
+        SetRelativeLocation(InOut.Location);
+        SetRelativeRotation(FQuat::MakeFromEuler(InOut.Rotation));
+        SetRelativeScale(InOut.Scale);
     }
     else
     {
         // 컴포넌트 월드 트랜스폼 -> FPrimitiveData
-        const FTransform WT = GetWorldTransform();
-        InOut.Location = WT.Translation;
-        InOut.Rotation = SceneRotUtil::EulerZYX_Deg_FromQuat(WT.Rotation);
-        InOut.Scale = WT.Scale3D;
+        InOut.Location = GetRelativeLocation();
+        InOut.Rotation = GetRelativeRotation().ToEulerDegree();
+        InOut.Scale = GetRelativeScale();
     }
 }
 
@@ -44,4 +41,8 @@ UObject* UPrimitiveComponent::Duplicate()
     NewComponent->Material = this->Material;
 
     return NewComponent;
+}
+void UPrimitiveComponent::RenderDetail()
+{
+    USceneComponent::RenderDetail();
 }

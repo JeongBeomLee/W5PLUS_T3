@@ -9,6 +9,7 @@ public:
 
 protected:
     ~UMeshComponent() override;
+    virtual void RenderDetail() override;
 
 public:
 

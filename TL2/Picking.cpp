@@ -1011,16 +1011,7 @@ uint32 CPickingSystem::IsHoveringGizmoForViewport(AGizmoActor* GizmoTransActor, 
 
 
 
-void CPickingSystem::DragActorWithGizmo(AActor* Actor, AGizmoActor*  GizmoActor,uint32 GizmoAxis, const FVector2D& MouseDelta, const ACameraActor* Camera, EGizmoMode InGizmoMode)
-{
-    
-    if (!Actor || !Camera || GizmoAxis == 0) 
-        return;
-    GizmoActor->OnDrag(Actor, GizmoAxis, MouseDelta.X, MouseDelta.Y, Camera,nullptr);
-}
-
-
-bool CPickingSystem::CheckGizmoComponentPicking(const UStaticMeshComponent* Component, const FRay& Ray, float& OutDistance)
+bool CPickingSystem::CheckGizmoComponentPicking(UStaticMeshComponent* Component, const FRay& Ray, float& OutDistance)
 {
     if (!Component) return false;
 
@@ -1031,7 +1022,7 @@ bool CPickingSystem::CheckGizmoComponentPicking(const UStaticMeshComponent* Comp
     if (!StaticMesh) return false;
 
     // 피킹 계산에는 컴포넌트의 월드 변환 행렬 사용
-    FMatrix WorldMatrix = Component->GetWorldMatrix();
+    const FMatrix& WorldMatrix = Component->GetWorldMatrix();
 
     auto TransformPoint = [&](float X, float Y, float Z) -> FVector
         {

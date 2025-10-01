@@ -293,6 +293,7 @@
     <ClCompile Include="UI\Window\SceneWindow.cpp" />
     <ClCompile Include="UI\Window\UIWindow.cpp" />
     <ClCompile Include="FViewport.cpp" />
+    <ClCompile Include="Vector.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="UI\StatsOverlayD2D.cpp" />
   </ItemGroup>
