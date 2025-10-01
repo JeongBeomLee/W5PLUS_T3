@@ -126,7 +126,7 @@ static void DebugRTTI_UObject(UObject* Obj, const char* Title)
 
 void UWorld::Initialize()
 {
-	//FObjManager::Preload();
+	FObjManager::Preload();
 
 	// 새 씬 생성
 	CreateNewScene();
@@ -370,18 +370,19 @@ void UWorld::RenderViewports(ACameraActor* Camera, FViewport* Viewport)
 
 			AllActorCount++;
 
-			if (Actor->CollisionComponent)
-			{
-				FBound Test = Actor->CollisionComponent->GetWorldBoundFromCube();
-
-				// 절두체 밖에 있다면, 이 액터의 렌더링 과정을 모두 건너뜁니다.
-				if (!ViewFrustum.IsVisible(Test))
-				{
-					FrustumCullCount++;
-
-					continue;
-				}
-			}
+			// Frustum Culling 비활성화
+			//if (Actor->CollisionComponent)
+			//{
+			//	FBound Test = Actor->CollisionComponent->GetWorldBoundFromCube();
+			//
+			//	// 절두체 밖에 있다면, 이 액터의 렌더링 과정을 모두 건너뜁니다.
+			//	if (!ViewFrustum.IsVisible(Test))
+			//	{
+			//		FrustumCullCount++;
+			//
+			//		continue;
+			//	}
+			//}
 
 			// 기즈모 색상 버퍼 초기화 (이거 빼면 머터리얼 없는 애들 기즈모 색상 따라감)
 			Renderer->UpdateHighLightConstantBuffer(false, rgb, 0, 0, 0, 0);
