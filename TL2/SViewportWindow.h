@@ -30,22 +30,19 @@ public:
   
 private:
     void RenderToolbar();
+    void StartPIE();
+    void EndPIE();
 
 private:
-
-
     FViewport* Viewport = nullptr;
     FViewportClient* ViewportClient = nullptr;
+
+    // PIE 상태
+    UWorld* PIEWorld = nullptr;
+    UWorld* EditorWorld = nullptr;
        
- 
     EViewportType ViewportType;
     FName ViewportName;
-
-
-   
-
-    
-
 
     bool bIsActive;
     bool bIsMouseDown;

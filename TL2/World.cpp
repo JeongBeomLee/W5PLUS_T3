@@ -30,6 +30,7 @@ UWorld::UWorld() : ResourceManager(UResourceManager::GetInstance())
     Level = NewObject<ULevel>();
     WorldType = EWorldType::Editor;
 }
+
 UWorld& UWorld::GetInstance()
 {
 	static UWorld* Instance = nullptr;
@@ -40,42 +41,54 @@ UWorld& UWorld::GetInstance()
 	return *Instance;
 }
 
-
 UWorld::~UWorld()
 {
-	// Level의 Actors 정리
+	// Level의 Actors 정리 (PIE는 복제된 액터들만 삭제)
 	if (Level)
 	{
 		for (AActor* Actor : Level->GetActors())
 		{
 			ObjectFactory::DeleteObject(Actor);
 		}
-	}
 
-	// 카메라 정리
-	ObjectFactory::DeleteObject(MainCameraActor);
-	MainCameraActor = nullptr;
-
-	// Grid 정리
-	ObjectFactory::DeleteObject(GridActor);
-	GridActor = nullptr;
-
-	// Level 정리
-	if (Level)
-	{
+		// Level 자체 정리
 		ObjectFactory::DeleteObject(Level);
 		Level = nullptr;
 	}
 
-	// BVH 정리
-	if (BVH)
+	// PIE 월드가 아닐 때만 공유 리소스 삭제
+	if (WorldType == EWorldType::Editor)
 	{
-		delete BVH;
+		// 카메라 정리
+		ObjectFactory::DeleteObject(MainCameraActor);
+		MainCameraActor = nullptr;
+
+		// Grid 정리
+		ObjectFactory::DeleteObject(GridActor);
+		GridActor = nullptr;
+
+		// GizmoActor 정리
+		ObjectFactory::DeleteObject(GizmoActor);
+		GizmoActor = nullptr;
+
+		// BVH 정리
+		if (BVH)
+		{
+			delete BVH;
+			BVH = nullptr;
+		}
+
+		// ObjManager 정리
+		FObjManager::Clear();
+	}
+	else if (WorldType == EWorldType::PIE)
+	{
+		// PIE 월드는 공유 포인터만 nullptr로 설정 (삭제하지 않음)
+		MainCameraActor = nullptr;
+		GridActor = nullptr;
+		GizmoActor = nullptr;
 		BVH = nullptr;
 	}
-
-	// ObjManager 정리
-	FObjManager::Clear();
 }
 
 static void DebugRTTI_UObject(UObject* Obj, const char* Title)
@@ -927,6 +940,18 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
 	// WorldType을 PIE로 설정
 	PIEWorld->SetWorldType(EWorldType::PIE);
 
+	// Renderer 공유 (얕은 복사)
+	PIEWorld->Renderer = EditorWorld->Renderer;
+
+	// MainCameraActor 공유 (PIE는 일단 Editor 카메라 사용)
+	PIEWorld->MainCameraActor = EditorWorld->MainCameraActor;
+
+	// GizmoActor는 PIE에서 사용하지 않음
+	PIEWorld->GizmoActor = nullptr;
+
+	// GridActor 공유 (선택적)
+	PIEWorld->GridActor = nullptr;
+
 	// Level 복제
 	if (EditorWorld->GetLevel())
 	{
@@ -935,18 +960,17 @@ UWorld* UWorld::DuplicateWorldForPIE(UWorld* EditorWorld)
 
 		if (PIELevel)
 		{
-			// Level의 Actors를 복제 (4단계에서 AActor::Duplicate 구현 후 활성화)
+			// Level의 Actors를 복제
 			for (AActor* EditorActor : EditorLevel->GetActors())
 			{
 				if (EditorActor)
 				{
-					// TODO: AActor::Duplicate() 구현 후 사용
-					// AActor* PIEActor = Cast<AActor>(EditorActor->Duplicate());
-					// if (PIEActor)
-					// {
-					//     PIELevel->AddActor(PIEActor);
-					//     PIEActor->SetWorld(PIEWorld);
-					// }
+					 AActor* PIEActor = Cast<AActor>(EditorActor->Duplicate());
+					 if (PIEActor)
+					 {
+					     PIELevel->AddActor(PIEActor);
+					     PIEActor->SetWorld(PIEWorld);
+					 }
 				}
 			}
 

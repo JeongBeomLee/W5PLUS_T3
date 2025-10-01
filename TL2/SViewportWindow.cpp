@@ -217,6 +217,7 @@ void SViewportWindow::RenderToolbar()
 		ImGui::SameLine();
 
 		if (ImGui::Button("Reset")) { /* TODO: 카메라 Reset */ }
+		ImGui::SameLine();
 
 		const char* viewModes[] = { "Lit", "Unlit", "Wireframe" };
 		int currentViewMode = static_cast<int>(ViewportClient-> GetViewModeIndex())-1; // 0=Lit, 1=Unlit, 2=Wireframe -1이유 1부터 시작이여서 
@@ -241,6 +242,24 @@ void SViewportWindow::RenderToolbar()
 		const float btnW = 60.0f;
 		const ImVec2 btnSize(btnW, 0.0f);
 
+
+		// PIE 버튼
+		ImGui::SameLine();
+		if (PIEWorld == nullptr)
+		{
+			if (ImGui::Button("Play (PIE)"))
+			{
+				StartPIE();
+			}
+		}
+		else
+		{
+			if (ImGui::Button("Stop (PIE)"))
+			{
+				EndPIE();
+			}
+		}
+
 		ImGui::SameLine();
 		float avail = ImGui::GetContentRegionAvail().x;      // 현재 라인에서 남은 가로폭
 		if (avail > btnW) {
@@ -257,4 +276,58 @@ void SViewportWindow::RenderToolbar()
 
 	}
 	ImGui::End();
+}
+
+// PIE 시작
+void SViewportWindow::StartPIE()
+{
+	if (!ViewportClient || PIEWorld != nullptr)
+	{
+		return; // 이미 PIE 실행 중
+	}
+
+	// 현재 Editor 월드 저장
+	EditorWorld = ViewportClient->GetWorld();
+	if (!EditorWorld)
+	{
+		return;
+	}
+
+	// Editor 월드를 PIE 월드로 복제
+	PIEWorld = UWorld::DuplicateWorldForPIE(EditorWorld);
+	if (!PIEWorld)
+	{
+		return;
+	}
+
+	// ViewportClient를 PIE 월드로 전환
+	ViewportClient->SetWorld(PIEWorld);
+
+	// PIE 월드의 모든 액터 BeginPlay 호출
+	PIEWorld->InitializeActorsForPlay();
+
+	UE_LOG("PIE Started\n");
+}
+
+// PIE 종료
+void SViewportWindow::EndPIE()
+{
+	if (!PIEWorld)
+	{
+		return; // PIE 실행 중이 아님
+	}
+
+	// ViewportClient를 Editor 월드로 먼저 복원
+	if (EditorWorld && ViewportClient)
+	{
+		ViewportClient->SetWorld(EditorWorld);
+	}
+
+	// PIE 월드 정리 (CleanupWorld 호출)
+	PIEWorld->CleanupWorld();
+
+	ObjectFactory::DeleteObject(PIEWorld);
+	PIEWorld = nullptr;
+
+	UE_LOG("PIE Stopped\n");
 }

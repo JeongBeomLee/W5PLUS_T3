@@ -143,11 +143,12 @@ void AGizmoActor::Tick(float DeltaSeconds)
 	}
 	UpdateComponentVisibility();
 }
-void AGizmoActor::Render(ACameraActor* Camera, FViewport* Viewport) {
+void AGizmoActor::Render(ACameraActor* Camera, FViewport* Viewport)
+{
 
-UpdateConstantScreenScale(Camera, Viewport);
+	UpdateConstantScreenScale(Camera, Viewport);
 
-TArray<USceneComponent*>* Components = GetGizmoComponents();
+	TArray<USceneComponent*>* Components = GetGizmoComponents();
 	if (!Components) return;
 
 
@@ -166,8 +167,6 @@ TArray<USceneComponent*>* Components = GetGizmoComponents();
 	FVector2D ViewportMousePos(static_cast<float>(UInputManager::GetInstance().GetMousePosition().X) + ViewportOffset.X,
 		static_cast<float>(UInputManager::GetInstance().GetMousePosition().Y) + ViewportOffset.Y);
 
-
-
 	for (int32 i = 0; i < Components->Num(); ++i)
 	{
 		USceneComponent* Component = (*Components)[i];
@@ -181,16 +180,16 @@ TArray<USceneComponent*>* Components = GetGizmoComponents();
 		ModelMatrix = Component->GetWorldMatrix();
 		Renderer->UpdateConstantBuffer(ModelMatrix, ViewMatrix, ProjectionMatrix);
 
-		
-			if (GizmoAxis== i + 1)
-			{
-				Renderer->UpdateHighLightConstantBuffer(true, rgb, i + 1, 1, 0, 1);
-			}
-			else
-			{
-				Renderer->UpdateHighLightConstantBuffer(true, rgb, i + 1, 0, 0, 1);
-			}
-		
+
+		if (GizmoAxis == i + 1)
+		{
+			Renderer->UpdateHighLightConstantBuffer(true, rgb, i + 1, 1, 0, 1);
+		}
+		else
+		{
+			Renderer->UpdateHighLightConstantBuffer(true, rgb, i + 1, 0, 0, 1);
+		}
+
 
 		if (UPrimitiveComponent* Primitive = Cast<UPrimitiveComponent>(Component))
 		{
@@ -596,7 +595,6 @@ void AGizmoActor::UpdateGizmoPosition()
 void AGizmoActor::ProcessGizmoInteraction(ACameraActor* Camera, FViewport* Viewport, float MousePositionX, float MousePositionY)
 {
 	if (!TargetActor || !Camera) return;
-
 	
     UpdateConstantScreenScale(Camera, Viewport);
 
@@ -606,7 +604,6 @@ void AGizmoActor::ProcessGizmoInteraction(ACameraActor* Camera, FViewport* Viewp
 	ProcessGizmoDragging(Camera, Viewport, MousePositionX, MousePositionY);
 
 	ProcessGizmoHovering(Camera,  Viewport,  MousePositionX, MousePositionY);
-
 }
 
 void AGizmoActor::ProcessGizmoHovering(ACameraActor* Camera,FViewport* Viewport ,float MousePositionX, float MousePositionY )
