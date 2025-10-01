@@ -283,7 +283,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine
 
 			renderer.UpdateUVScroll(UVScrollSpeed, UVScrollTime);
 
-			// EditorEngine Tick (모든 WorldContext의 월드들을 Tick)
+			// EditorEngine Tick
 			if (GEditor)
 			{
 				GEditor->Tick(DeltaSeconds);

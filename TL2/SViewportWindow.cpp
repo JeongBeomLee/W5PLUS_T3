@@ -308,6 +308,10 @@ void SViewportWindow::StartPIE()
 		PIEContext->OwningEditorWorld = EditorWorld;
 	}
 
+	// Editor 월드의 MultiViewport와 MainViewport를 PIE 월드에도 설정
+	PIEWorld->SetMultiViewportWindow(EditorWorld->GetMultiViewportWindow());
+	PIEWorld->SetMainViewport(EditorWorld->GetMainViewport());
+
 	// GWorld를 PIE 월드로 전환
 	GWorld = PIEWorld;
 
@@ -335,19 +339,11 @@ void SViewportWindow::EndPIE()
 		ViewportClient->SetWorld(EditorWorld);
 	}
 
-	// GWorld를 Editor 월드로 복원
-	GWorld = EditorWorld;
+	// PIE 종료 요청 (다음 프레임 시작 시 정리됨)
+	GEditor->RequestEndPIE();
 
-	// PIE 월드 정리 (CleanupWorld 호출)
-	PIEWorld->CleanupWorld();
-
-	// PIE 월드를 WorldContext에서 제거
-	GEditor->RemoveWorldContext(PIEWorld);
-
-	// PIE 월드 삭제
-	ObjectFactory::DeleteObject(PIEWorld);
+	// 로컬 상태 정리
 	PIEWorld = nullptr;
-	EditorWorld = nullptr;
 
-	UE_LOG("PIE Stopped\n");
+	UE_LOG("PIE Stop Requested\n");
 }

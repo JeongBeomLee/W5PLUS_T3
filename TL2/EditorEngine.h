@@ -37,11 +37,19 @@ public:
     // 메인 Tick
     virtual void Tick(float DeltaSeconds);
 
+    // PIE 종료 요청
+    void RequestEndPIE();
+    bool IsPIEEnding() const { return bPendingEndPIE; }
+
 private:
     // WorldType별 Tick 처리
     void TickEditorWorld(UWorld* World, float DeltaSeconds);
     void TickPIEWorld(UWorld* World, float DeltaSeconds);
 
+    // PIE 정리 내부 함수
+    void CleanupPIE();
+
 private:
     TArray<FWorldContext> WorldContexts;
+    bool bPendingEndPIE = false;
 };

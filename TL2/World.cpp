@@ -17,6 +17,7 @@
 #include "Frustum.h"
 #include "Octree.h"
 #include "BVH.h"
+#include <Globals.h>
 
 extern float CLIENTWIDTH;
 extern float CLIENTHEIGHT;
@@ -78,6 +79,9 @@ UWorld::~UWorld()
 		GridActor = nullptr;
 		GizmoActor = nullptr;
 		BVH = nullptr;
+		Renderer = nullptr;
+		MainViewport = nullptr;
+		MultiViewport = nullptr;
 	}
 }
 
@@ -203,6 +207,11 @@ void UWorld::SetRenderer(URenderer* InRenderer)
 
 void UWorld::Render()
 {
+	// PIE 종료 중이면 렌더링 스킵
+	if (GEditor && GEditor->IsPIEEnding()) {
+		return;
+	}
+
 	Renderer->BeginFrame();
 	UIManager.Render();
 

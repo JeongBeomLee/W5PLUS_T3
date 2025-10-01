@@ -140,6 +140,14 @@ UWorld* UEditorEngine::GetActiveWorld() const
 
 void UEditorEngine::Tick(float DeltaSeconds)
 {
+    // PIE 종료 요청이 있으면 현재 프레임 완료 후 정리
+    if (bPendingEndPIE)
+    {
+        CleanupPIE();
+        bPendingEndPIE = false;
+        return; // 이번 틱은 스킵
+    }
+
     for (FWorldContext& WorldContext : WorldContexts)
     {
         UWorld* World = WorldContext.GetWorld();
@@ -208,7 +216,7 @@ void UEditorEngine::TickPIEWorld(UWorld* World, float DeltaSeconds)
 {
     if (!World) return;
 
-    // Level의 액터들 Tick (PIE/Game 모드)
+    // Level의 액터들 Tick (PIE/Game 모드 동일하게 처리하면 될듯)
     if (ULevel* Level = World->GetLevel())
     {
         for (AActor* Actor : Level->GetActors())
@@ -221,5 +229,49 @@ void UEditorEngine::TickPIEWorld(UWorld* World, float DeltaSeconds)
     }
 
     // PIE에서는 GizmoActor Tick 안 함 (nullptr이므로)
+    // Viewport 입력 처리 (PIE에서도 카메라 조작 가능하도록 설정함)
+    World->ProcessViewportInput();
+
+    // MultiViewport 업데이트
+    if (SMultiViewportWindow* MultiViewport = World->GetMultiViewportWindow())
+    {
+        MultiViewport->OnUpdate(DeltaSeconds);
+    }
+
+    // InputManager와 UIManager 업데이트 (PIE 중에도 UI 표시)
+    UInputManager::GetInstance().Update();
+    UUIManager::GetInstance().Update(DeltaSeconds);
+}
+
+void UEditorEngine::RequestEndPIE()
+{
+    bPendingEndPIE = true;
+}
+
+void UEditorEngine::CleanupPIE()
+{
+    UWorld* PIEWorld = GetPIEWorld();
+    if (!PIEWorld)
+    {
+        return;
+    }
+
+    UWorld* EditorWorld = GetEditorWorld();
+
+    // ViewportClient를 Editor 월드로 먼저 복원 (SViewportWindow에서 처리하도록 남겨둠)
+    // 하지만 여기서는 GWorld만 복원
+    extern UWorld* GWorld;
+    GWorld = EditorWorld;
+
+    // PIE 월드 정리
+    PIEWorld->CleanupWorld();
+
+    // PIE 월드를 WorldContext에서 제거
+    RemoveWorldContext(PIEWorld);
+
+    // PIE 월드 삭제
+    ObjectFactory::DeleteObject(PIEWorld);
+
+    UE_LOG("PIE Stopped (Deferred)\n");
 }
 

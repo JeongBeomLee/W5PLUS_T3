@@ -167,14 +167,10 @@ void UUIManager::Render()
 			Window->RenderWindow();
 		}
 	}
-
-
-	
 }
-void UUIManager::EndFrame() {
 
-
-
+void UUIManager::EndFrame() 
+{
 	// ImGui 프레임 종료
 	ImGuiHelper->EndFrame();
 }
