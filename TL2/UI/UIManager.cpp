@@ -134,8 +134,6 @@ void UUIManager::Update(float DeltaTime)
 
 	// 포커스 상태 업데이트
 	UpdateFocusState();
-
-
 }
 
 /**

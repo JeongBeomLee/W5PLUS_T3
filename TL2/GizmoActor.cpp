@@ -583,8 +583,6 @@ worldPerPixel *= zoomFactor;*/
 	}
 }
 
-
-
 void AGizmoActor::UpdateGizmoPosition()
 {
 	if (!TargetActor) return;

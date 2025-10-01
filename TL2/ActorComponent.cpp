@@ -36,3 +36,22 @@ void UActorComponent::EndPlay()
     // 파괴 시
     // 필요하다면 Override
 }
+
+UObject* UActorComponent::Duplicate()
+{
+    UActorComponent* NewComponent = static_cast<UActorComponent*>(
+        ObjectFactory::NewObject(this->GetClass())
+    );
+
+    if (!NewComponent)
+    {
+        return nullptr;
+    }
+
+    // 기본 속성 복사
+    NewComponent->bIsActive = this->bIsActive;
+    NewComponent->bCanEverTick = this->bCanEverTick;
+    // Owner는 복제 후 외부에서 설정 (AActor::DuplicateSubObjects에서)
+
+    return NewComponent;
+}

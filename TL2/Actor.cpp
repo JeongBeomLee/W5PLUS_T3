@@ -266,13 +266,12 @@ void AActor::DuplicateSubObjects()
     {
         if (OriginalComp)
         {
-            // TODO: UActorComponent::Duplicate() 구현 필요
-            // UActorComponent* NewComp = Cast<UActorComponent>(OriginalComp->Duplicate());
-            // if (NewComp)
-            // {
-            //     NewComp->SetOwner(this);
-            //     AddComponent(NewComp);
-            // }
+             UActorComponent* NewComp = Cast<UActorComponent>(OriginalComp->Duplicate());
+             if (NewComp)
+             {
+                 NewComp->SetOwner(this);
+                 AddComponent(NewComp);
+             }
         }
     }
 }
