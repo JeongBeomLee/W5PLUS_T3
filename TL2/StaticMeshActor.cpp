@@ -85,12 +85,6 @@ UObject* AStaticMeshActor::Duplicate()
     // 서브 오브젝트(Components) 복제
     NewActor->DuplicateSubObjects();
 
-    // Transform 복사
-    if (this->RootComponent && NewActor->RootComponent)
-    {
-        NewActor->SetActorTransform(this->RootComponent->GetRelativeTransform());
-    }
-
     return NewActor;
 }
 
@@ -114,7 +108,8 @@ void AStaticMeshActor::DuplicateSubObjects()
             if (NewComp)
             {
                 NewComp->SetOwner(this);
-                AddComponent(NewComp);
+                // AddComponent 호출하지 않음 - 계층 구조를 나중에 복원하므로
+                Components.insert(NewComp);
                 ComponentMap[OriginalComponent] = NewComp;
             }
         }

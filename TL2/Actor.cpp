@@ -189,12 +189,6 @@ UObject* AActor::Duplicate()
     NewActor->bHiddenInGame = this->bHiddenInGame;
     NewActor->bTickInEditor = this->bTickInEditor;
 
-    // Transform 복사
-    if (this->RootComponent)
-    {
-        NewActor->SetActorTransform(this->RootComponent->GetRelativeTransform());
-    }
-
     // 서브 오브젝트(Components) 복제
     NewActor->DuplicateSubObjects();
 
@@ -219,7 +213,7 @@ void AActor::DuplicateSubObjects()
             if (NewComp)
             {
                 NewComp->SetOwner(this);
-                AddComponent(NewComp);
+                Components.insert(NewComp);
                 ComponentMap[OriginalComponent] = NewComp;
             }
         }
