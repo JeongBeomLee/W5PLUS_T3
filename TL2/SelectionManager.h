@@ -16,33 +16,33 @@ class USelectionManager : public UObject
 public:
     DECLARE_CLASS(USelectionManager, UObject)
     static USelectionManager& GetInstance();
-    
+
     /** === 선택 관리 === */
     void SelectActor(AActor* Actor);
     void DeselectActor(AActor* Actor);
+    void SelectComponent(USceneComponent* Component);
+    void DeselectComponent(USceneComponent* Component);;
+
     void ClearSelection();
-    
-    bool IsActorSelected(AActor* Actor) const;
-    
+
     /** === 선택된 액터 접근 === */
-    AActor* GetSelectedActor() const; // 단일 선택용
-    const TArray<AActor*>& GetSelectedActors() const { return SelectedActors; }
-    
-    int32 GetSelectionCount() const { return SelectedActors.Num(); }
-    bool HasSelection() const { return SelectedActors.Num() > 0; }
-    
-    /** === 삭제된 액터 정리 === */
-    void CleanupInvalidActors(); // null이나 삭제된 액터 제거
+    AActor* GetSelectedActor() const { return SelectedActor; }
+    USceneComponent* GetSelectedComponent() const { return SelectedComponent; }
+    //액터선택 = 루트컴포넌트 리턴, 컴포넌트 선택 = 컴포넌트 리턴
+    USceneComponent* GetSelectedOnlyComponent() const;
+
+    bool HasSelection() const { return SelectedActor != nullptr; }
 
 public:
     USelectionManager();
 protected:
     ~USelectionManager() override;
-    
+
     // 복사 금지
     USelectionManager(const USelectionManager&) = delete;
     USelectionManager& operator=(const USelectionManager&) = delete;
-    
+
     /** === 선택된 액터들 === */
-    TArray<AActor*> SelectedActors;
+    AActor* SelectedActor;
+    USceneComponent* SelectedComponent;
 };

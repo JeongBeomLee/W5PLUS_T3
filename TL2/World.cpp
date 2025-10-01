@@ -166,8 +166,9 @@ void UWorld::InitializeGizmo()
 	// === 기즈모 엑터 초기화 ===
 	GizmoActor = NewObject<AGizmoActor>();
 	GizmoActor->SetWorld(this);
-	GizmoActor->SetActorTransform(FTransform(FVector{ 0, 0, 0 }, FQuat::MakeFromEuler(FVector{ 0, -90, 0 }),
-		FVector{ 1, 1, 1 }));
+	GizmoActor->SetActorLocation(FVector(0, 0, 0));
+	GizmoActor->SetActorRotation(FQuat::MakeFromEuler(FVector(0, -90, 0)));
+	GizmoActor->SetActorScale(FVector(0, 0, 0));
 	// 기즈모에 카메라 참조 설정
 	if (MainCameraActor)
 	{
@@ -511,12 +512,6 @@ bool UWorld::DestroyActor(AActor* Actor)
 	// SelectionManager에서 선택 해제 (메모리 해제 전에 하자)
 	USelectionManager::GetInstance().DeselectActor(Actor);
 
-	// UIManager에서 픽된 액터 정리
-	if (UIManager.GetPickedActor() == Actor)
-	{
-		UIManager.ResetPickedActor();
-	}
-
 	// Level에서 제거 시도
 	if (Level)
 	{
@@ -524,9 +519,6 @@ bool UWorld::DestroyActor(AActor* Actor)
 
 		// 메모리 해제
 		ObjectFactory::DeleteObject(Actor);
-
-		// 삭제된 액터 정리
-		USelectionManager::GetInstance().CleanupInvalidActors();
 
 		return true; // 성공적으로 삭제
 	}
@@ -567,7 +559,6 @@ void UWorld::CreateNewScene()
 {
 	// Safety: clear interactions that may hold stale pointers
 	SelectionManager.ClearSelection();
-	UIManager.ResetPickedActor();
 
 	// Level의 Actors 정리
 	if (Level)

@@ -11,3 +11,7 @@ FString UObject::GetComparisonName()
 }
 
 
+const FString UObject::GetName() const
+{
+    return ObjectName.ToString();
+}

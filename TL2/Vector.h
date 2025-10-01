@@ -5,8 +5,7 @@
 #include <limits>
 
 #include "UEContainer.h"
-
-
+#include "UI/GlobalConsole.h"
 
 // 혹시 다른 헤더에서 새어 들어온 매크로 방지
 #ifdef min
@@ -24,7 +23,8 @@ constexpr float KINDA_SMALL_NUMBER = 1e-6f;
 constexpr float PI = 3.14159265358979323846f;
 constexpr float TWO_PI = 6.2831853071795864769f;
 constexpr float HALF_PI = 1.5707963267948966192f;
-
+constexpr float ToRadian = PI / 180.0f;
+constexpr float ToDegree = 180.0f / PI;
 inline float DegreeToRadian(float Degree) { return Degree * (PI / 180.0f); }
 inline float RadianToDegree(float Radian) { return Radian * (180.0f / PI); }
 // FMath 네임스페이스 대체
@@ -192,7 +192,7 @@ struct FVector
         default: return X; // 안전한 기본값
         }
     }
-    
+
     FVector ComponentMin(const FVector& B)
     {
         return FVector(
@@ -275,6 +275,13 @@ struct FVector
     {
         return FVector(1.f, 1.f, 1.f);
     }
+
+    void Log()
+    {
+        char debugMsg[64];
+        sprintf_s(debugMsg, "Vector3(%f, %f, %f)", X, Y, Z);
+        UE_LOG(debugMsg);
+    }
 };
 
 // ─────────────────────────────
@@ -306,6 +313,12 @@ struct FVector4
             (W > B.W) ? W : B.W
         );
     }
+    void Log()
+    {
+        char debugMsg[64];
+        sprintf_s(debugMsg, "Vector4(%f, %f, %f, %f)", X, Y, Z, W);
+        UE_LOG(debugMsg);
+    }
 };
 
 // ─────────────────────────────
@@ -313,191 +326,29 @@ struct FVector4
 // ─────────────────────────────
 struct FQuat
 {
+public:
+
     float X, Y, Z, W;
 
-    FQuat(float InX = 0, float InY = 0, float InZ = 0, float InW = 1)
-        : X(InX), Y(InY), Z(InZ), W(InW)
-    {
-    }
+    static FQuat Identity;
+public:
 
-    static FQuat Identity() { return FQuat(0, 0, 0, 1); }
+    FQuat() :X(0), Y(0), Z(0), W(0) {}
+    FQuat(float x, float y, float z, float w) :X(x), Y(y), Z(z), W(w) {}
+    FQuat(const FVector& normal, const float degree);
+    FVector RotateVector(const FVector& v)const;
+    FQuat RotateAxis(const FVector& axis, const float degree);
+    FVector ToEulerDegree();
+    FVector GetForward() const;
+    FVector GetUp() const;
+    FVector GetRight() const;
 
-    // 곱 (회전 누적)
-    FQuat operator*(const FQuat& Q) const
-    {
-        return FQuat(
-            W * Q.X + X * Q.W + Y * Q.Z - Z * Q.Y,
-            W * Q.Y - X * Q.Z + Y * Q.W + Z * Q.X,
-            W * Q.Z + X * Q.Y - Y * Q.X + Z * Q.W,
-            W * Q.W - X * Q.X - Y * Q.Y - Z * Q.Z
-        );
-    }
+    void Normalize();
+    const FMatrix ToMatrix() const;
+    static FQuat MakeFromEuler(const FVector& eulerDegree);
+    FQuat operator* (const FQuat& rhs) const;
 
-    static float Dot(const FQuat& A, const FQuat& B)
-    {
-        return A.X * B.X + A.Y * B.Y + A.Z * B.Z + A.W * B.W;
-    }
-
-    float SizeSquared() const { return X * X + Y * Y + Z * Z + W * W; }
-    float Size()        const { return std::sqrt(SizeSquared()); }
-
-    void Normalize()
-    {
-        float S = Size();
-        if (S > KINDA_SMALL_NUMBER) { X /= S; Y /= S; Z /= S; W /= S; }
-        else { *this = Identity(); }
-    }
-
-    FQuat GetNormalized() const
-    {
-        FQuat Quat = *this; Quat.Normalize(); return Quat;
-    }
-
-    FQuat Conjugate() const { return FQuat(-X, -Y, -Z, W); }
-    FQuat Inverse()   const
-    {
-        float SS = SizeSquared();
-        if (SS <= KINDA_SMALL_NUMBER) return Identity();
-        return Conjugate() * (1.0f / SS);
-    }
-    // 스칼라 곱
-    FQuat operator*(float S) const { return FQuat(X * S, Y * S, Z * S, W * S); }
-
-    // 벡터 회전
-    FVector RotateVector(const FVector& V) const;
-
-    // 오일러 → 쿼터니언 (Pitch=X, Yaw=Y, Roll=Z in degrees)
-    // ZYX 순서 (Roll → Yaw → Pitch) - 로컬 축 회전
-    static FQuat MakeFromEuler(const FVector& EulerRad)
-    {
-        float PitchDeg = DegreeToRadian(EulerRad.X);
-        float YawDeg = DegreeToRadian(EulerRad.Y);
-        float RollDeg = DegreeToRadian(EulerRad.Z);
-
-        const float PX = PitchDeg * 0.5f; // Pitch about X
-        const float PY = YawDeg * 0.5f; // Yaw   about Y
-        const float PZ = RollDeg * 0.5f; // Roll  about Z
-
-        const float CX = cosf(PX), SX = sinf(PX);
-        const float CY = cosf(PY), SY = sinf(PY);
-        const float CZ = cosf(PZ), SZ = sinf(PZ);
-
-        // Order: Rx * Ry * Rz  (intrinsic X→Y→Z)
-        // Mapping: X=Pitch, Y=Yaw, Z=Roll
-        FQuat q;
-        q.X = SX * CY * CZ + CX * SY * SZ;
-        q.Y = CX * SY * CZ - SX * CY * SZ;
-        q.Z = CX * CY * SZ + SX * SY * CZ;
-        q.W = CX * CY * CZ - SX * SY * SZ;
-        return q.GetNormalized(); // 필요하면 정규화
-    }
-    // Axis-Angle → Quaternion (axis normalized, angle in radians)
-    static FQuat FromAxisAngle(const FVector& Axis, float Angle)
-    {
-        float Half = Angle * 0.5f;
-        float S = std::sin(Half);
-        FVector N = Axis.GetNormalized();
-        return FQuat(N.X * S, N.Y * S, N.Z * S, std::cos(Half));
-    }
-
-    // 쿼터니언 → 오일러 (Pitch, Yaw, Roll) in degrees
-    // ZYX 순서 (Tait-Bryan) - FromEuler와 일치 (로컬 축 회전)
-    FVector ToEuler() const
-    {
-        // normalize (safety)
-        float N = std::sqrt(X * X + Y * Y + Z * Z + W * W);
-        if (N <= KINDA_SMALL_NUMBER) return FVector(0, 0, 0);
-        float QX = X / N, QY = Y / N, QZ = Z / N, QW = W / N;
-
-        // ZYX Tait-Bryan 각도 추출 (Roll → Yaw → Pitch)
-        // Pitch (X축): atan2(2*(qw*qx - qy*qz), 1 - 2*(qx² + qz²))
-        float SinrCosp = 2.0f * (QW * QX - QY * QZ);
-        float CosrCosp = 1.0f - 2.0f * (QX * QX + QZ * QZ);
-        float Pitch = std::atan2(SinrCosp, CosrCosp);
-
-        // Yaw (Y축): asin(2*(qw*qy + qx*qz))
-        float Sinp = 2.0f * (QW * QY + QX * QZ);
-        Sinp = std::max(-1.0f, std::min(1.0f, Sinp)); // clamp to avoid NaN
-        float Yaw = std::asin(Sinp);
-
-        // Roll (Z축): atan2(2*(qw*qz - qx*qy), 1 - 2*(qy² + qz²))
-        float SinyCosp = 2.0f * (QW * QZ - QX * QY);
-        float CosyCosp = 1.0f - 2.0f * (QY * QY + QZ * QZ);
-        float Roll = std::atan2(SinyCosp, CosyCosp);
-
-        return FVector(RadianToDegree(Pitch), RadianToDegree(Yaw), RadianToDegree(Roll));
-    }
-    FVector GetForwardVector() const
-{
-    // 보통 게임엔진(Z-Up, Forward = +X) 기준
-    return RotateVector(FVector(1, 0, 0));
-}
-
-FVector GetRightVector() const
-{
-    return RotateVector(FVector(0, 1, 0));
-}
-
-FVector GetUpVector() const
-{
-    return RotateVector(FVector(0, 0, 1));
-}
-
-    // Slerp
-    static FQuat Slerp(const FQuat& A, const FQuat& B, float T)
-    {
-        float CosTheta = Dot(A, B);
-        FQuat End = B;
-
-        // 가장 짧은 호
-        if (CosTheta < 0.0f) { End = FQuat(-B.X, -B.Y, -B.Z, -B.W); CosTheta = -CosTheta; }
-
-        // 근접하면 Nlerp
-        const float SLERP_EPS = 1e-3f;
-        if (CosTheta > 1.0f - SLERP_EPS)
-        {
-            FQuat r = FQuat(
-                A.X + (End.X - A.X) * T,
-                A.Y + (End.Y - A.Y) * T,
-                A.Z + (End.Z - A.Z) * T,
-                A.W + (End.W - A.W) * T
-            );
-            r.Normalize();
-            return r;
-        }
-
-        float Theta = std::acos(CosTheta);
-        float SinTheta = std::sin(Theta);
-        float W1 = std::sin((1.0f - T) * Theta) / SinTheta;
-        float W2 = std::sin(T * Theta) / SinTheta;
-
-        FQuat Quat = A * W1 + End * W2;
-        Quat.Normalize();
-        return Quat;
-    }
-
-    // 보조: 선형 보간 후 정규화
-    static FQuat Nlerp(const FQuat& A, const FQuat& B, float T)
-    {
-        FQuat End = (Dot(A, B) < 0.0f) ? FQuat(-B.X, -B.Y, -B.Z, -B.W) : B;
-        FQuat Quat(A.X + (End.X - A.X) * T,
-                A.Y + (End.Y - A.Y) * T,
-                A.Z + (End.Z - A.Z) * T,
-                A.W + (End.W - A.W) * T);
-        Quat.Normalize();
-        return Quat;
-    }
-
-    // 선언: 행렬 변환
-    FMatrix ToMatrix() const;
-
-private:
-    // 보조 연산 (내부용)
-    FQuat operator+(const FQuat& Quat) const { return FQuat(X + Quat.X, Y + Quat.Y, Z + Quat.Z, W + Quat.W); }
 };
-
-// 스칼라 곱(전역)
-inline FQuat operator*(float Scalar, const FQuat& Quat) { return FQuat(Quat.X * Scalar, Quat.Y * Scalar, Quat.Z * Scalar, Quat.W * Scalar); }
 
 // ─────────────────────────────
 // FMatrix (4x4 Matrix)
@@ -515,14 +366,21 @@ struct alignas(16) FMatrix
     FMatrix() = default;
 
     constexpr FMatrix(float M00, float M01, float M02, float M03,
-                      float M10, float M11, float M12, float M13,
-                      float M20, float M21, float M22, float M23,
-                      float M30, float M31, float M32, float M33) noexcept
+        float M10, float M11, float M12, float M13,
+        float M20, float M21, float M22, float M23,
+        float M30, float M31, float M32, float M33) noexcept
     {
         M[0][0] = M00; M[0][1] = M01; M[0][2] = M02; M[0][3] = M03;
         M[1][0] = M10; M[1][1] = M11; M[1][2] = M12; M[1][3] = M13;
         M[2][0] = M20; M[2][1] = M21; M[2][2] = M22; M[2][3] = M23;
         M[3][0] = M30; M[3][1] = M31; M[3][2] = M32; M[3][3] = M33;
+    }
+    constexpr FMatrix(const FVector4& Row0, const FVector4& Row1, const FVector4& Row2, const FVector4& Row3)
+    {
+        Rows[0] = Row0;
+        Rows[1] = Row1;
+        Rows[2] = Row2;
+        Rows[3] = Row3;
     }
 
     static FMatrix Identity()
@@ -585,7 +443,18 @@ struct alignas(16) FMatrix
         }
         return T;
     }
-
+    FVector GetForward() const
+    {
+        return FVector(M[0][0], M[0][1], M[0][2]).GetNormalized();
+    }
+    FVector GetRight() const
+    {
+        return FVector(M[1][0], M[1][1], M[1][2]).GetNormalized();
+    }
+    FVector GetUp() const
+    {
+        return FVector(M[2][0], M[2][1], M[2][2]).GetNormalized();
+    }
     // Affine 역행렬 (마지막 행 = [0,0,0,1] 가정)
     FMatrix InverseAffine() const
     {
@@ -646,20 +515,39 @@ struct alignas(16) FMatrix
         rot.M[3][3] = 1;
         return rot;
     }
-
+    static FMatrix Translation(const FVector& T)
+    {
+        FMatrix TMat = FMatrix::Identity();
+        TMat.M[3][0] = T.X;
+        TMat.M[3][1] = T.Y;
+        TMat.M[3][2] = T.Z;
+        return TMat;
+    }
     // View/Proj (L H)
     static FMatrix LookAtLH(const FVector& Eye, const FVector& At, const FVector& Up);
     static FMatrix PerspectiveFovLH(float FovY, float Aspect, float Zn, float Zf);
     static FMatrix OrthoLH(float Width, float Height, float Zn, float Zf);
+
+    void Log() const
+    {
+        char debugMsg[256];
+        sprintf_s(debugMsg, "Matrix\n%f, %f, %f, %f \n%f, %f, %f, %f\n%f, %f, %f, %f\n%f, %f, %f, %f",
+            FlatM[0], FlatM[1], FlatM[2], FlatM[3],
+            FlatM[4], FlatM[5], FlatM[6], FlatM[7],
+            FlatM[8], FlatM[9], FlatM[10], FlatM[11],
+            FlatM[12], FlatM[13], FlatM[14], FlatM[15]);
+        UE_LOG(debugMsg);
+    }
+
+    static const FMatrix ViewAxis;
 };
 
-//Without Last RC
 inline FVector operator*(const FVector& V, const FMatrix& S)
 {
     FVector Result;
-    Result.X = V.X * S.M[0][0] + V.Y * S.M[1][0] + V.Z * S.M[2][0];
-    Result.Y = V.X * S.M[0][1] + V.Y * S.M[1][1] + V.Z * S.M[2][1];
-    Result.Z = V.X * S.M[0][2] + V.Y * S.M[1][2] + V.Z * S.M[2][2];
+    Result.X = V.X * S.M[0][0] + V.Y * S.M[1][0] + V.Z * S.M[2][0] + S.M[3][0];
+    Result.Y = V.X * S.M[0][1] + V.Y * S.M[1][1] + V.Z * S.M[2][1] + S.M[3][1];
+    Result.Z = V.X * S.M[0][2] + V.Y * S.M[1][2] + V.Z * S.M[2][2] + S.M[3][2];
     return Result;
 }
 
@@ -697,79 +585,21 @@ struct FTransform
     // 역변환
     FTransform Inverse() const;
 
-    // 유틸
-    FVector TransformPosition(const FVector& P) const
-    {
-        // (R*S)*P + T
-        FVector SP = FVector(P.X * Scale3D.X, P.Y * Scale3D.Y, P.Z * Scale3D.Z);
-        FVector RP = Rotation.RotateVector(SP);
-        return Translation + RP;
-    }
-    FVector TransformVector(const FVector& V) const
-    {
-        // R*(S*V) (translation 없음)
-        FVector SV = FVector(V.X * Scale3D.X, V.Y * Scale3D.Y, V.Z * Scale3D.Z);
-        return Rotation.RotateVector(SV);
-    }
+    FMatrix GetWorldMatrix() const;
 
-    static FTransform Lerp(const FTransform& A, const FTransform& B, float T)
-    {
-        FVector  TPosition = FVector::Lerp(A.Translation, B.Translation, T);
-        FVector  TScale = FVector::Lerp(A.Scale3D, B.Scale3D, T);
-        FQuat    TRotation = FQuat::Slerp(A.Rotation, B.Rotation, T);
-        return FTransform(TPosition, TRotation, TScale);
-    }
+
+    //static FTransform Lerp(const FTransform& A, const FTransform& B, float T)
+    //{
+    //    FVector  TPosition = FVector::Lerp(A.Translation, B.Translation, T);
+    //    FVector  TScale = FVector::Lerp(A.Scale3D, B.Scale3D, T);
+    //    FQuat    TRotation = FQuat::Slerp(A.Rotation, B.Rotation, T);
+    //    return FTransform(TPosition, TRotation, TScale);
+    //}
 };
 
 // ─────────────────────────────
 // Inline 구현부
 // ─────────────────────────────
-
-// v' = v + 2 * cross(q.xyz, cross(q.xyz, v) + q.w * v)
-inline FVector FQuat::RotateVector(const FVector& V) const
-{
-    float n = X * X + Y * Y + Z * Z + W * W;
-    if (n <= KINDA_SMALL_NUMBER) return V;
-
-    const FVector U(X, Y, Z);
-    const FVector T(
-        2.0f * (U.Y * V.Z - U.Z * V.Y),
-        2.0f * (U.Z * V.X - U.X * V.Z),
-        2.0f * (U.X * V.Y - U.Y * V.X)
-    );
-    return FVector(
-        V.X + W * T.X + (U.Y * T.Z - U.Z * T.Y),
-        V.Y + W * T.Y + (U.Z * T.X - U.X * T.Z),
-        V.Z + W * T.Z + (U.X * T.Y - U.Y * T.X)
-    );
-}
-inline FQuat MakeQuatFromAxisAngle(const FVector& Axis, float AngleRad)
-{
-    FVector NormAxis = Axis.GetSafeNormal();
-    float half = AngleRad * 0.5f;
-    float s = sinf(half);
-    return FQuat(
-        NormAxis.X * s,
-        NormAxis.Y * s,
-        NormAxis.Z * s,
-        cosf(half)
-    );
-}
-
-// FQuat → Matrix
-inline FMatrix FQuat::ToMatrix() const
-{
-    float XX = X * X, YY = Y * Y, ZZ = Z * Z;
-    float XY = X * Y, XZ = X * Z, YZ = Y * Z;
-    float WX = W * X, WY = W * Y, WZ = W * Z;
-
-    return FMatrix(
-        1.0f - 2.0f * (YY + ZZ), 2.0f * (XY - WZ), 2.0f * (XZ + WY), 0.0f,
-        2.0f * (XY + WZ), 1.0f - 2.0f * (XX + ZZ), 2.0f * (YZ - WX), 0.0f,
-        2.0f * (XZ - WY), 2.0f * (YZ + WX), 1.0f - 2.0f * (XX + YY), 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f
-    );
-}
 
 // Row-major + 행벡터(p' = p * M), Left-Handed: forward = +Z
 inline FMatrix FMatrix::LookAtLH(const FVector& Eye, const FVector& At, const FVector& Up)
@@ -852,57 +682,6 @@ inline FMatrix FMatrix::OrthoLH(float Width, float Height, float Zn, float Zf)
     return m;
 }
 
-// FTransform → Matrix (row-vector convention; translation in last row)
-// inline FMatrix FTransform::ToMatrixWithScale() const
-// {
-//     float x2 = Rotation.X + Rotation.X;
-//     float y2 = Rotation.Y + Rotation.Y;
-//     float z2 = Rotation.Z + Rotation.Z;
-//
-//     float xx = Rotation.X * x2; float yy = Rotation.Y * y2; float zz = Rotation.Z * z2;
-//     float xy = Rotation.X * y2; float xz = Rotation.X * z2; float yz = Rotation.Y * z2;
-//     float wx = Rotation.W * x2; float wy = Rotation.W * y2; float wz = Rotation.W * z2;
-//
-//     float sx = Scale3D.X;
-//     float sy = Scale3D.Y;
-//     float sz = Scale3D.Z;
-//
-//     // Rows store basis vectors scaled by S; translation in last row
-//     return FMatrix(
-//         (1.0f - (yy + zz)) * sx, (xy + wz) * sx, (xz - wy) * sx, 0.0f,
-//         (xy - wz) * sy, (1.0f - (xx + zz)) * sy, (yz + wx) * sy, 0.0f,
-//         (xz + wy) * sz, (yz - wx) * sz, (1.0f - (xx + yy)) * sz, 0.0f,
-//         Translation.X, Translation.Y, Translation.Z, 1.0f
-//     );
-// }
-
-// Q = Q2 * Q1인데 Q1먼저 적용 되는거로 하고 싶을 때 이거 사용
-inline FQuat QuatMul(const FQuat& Q2, const FQuat& Q1)
-{
-    return {
-        Q2.W * Q1.X + Q2.X * Q1.W + Q2.Y * Q1.Z - Q2.Z * Q1.Y,
-        Q2.W * Q1.Y - Q2.X * Q1.Z + Q2.Y * Q1.W + Q2.Z * Q1.X,
-        Q2.W * Q1.Z + Q2.X * Q1.Y - Q2.Y * Q1.X + Q2.Z * Q1.W,
-        Q2.W * Q1.W - Q2.X * Q1.X - Q2.Y * Q1.Y - Q2.Z * Q1.Z
-    };
-}
-
-inline FQuat QuatFromAxisAngle(const FVector& Axis, float AngleRadian)
-{
-    const float H = 0.5f * AngleRadian;
-    const float S = std::sin(H);
-    const float C = std::cos(H);
-    return { Axis.X * S, Axis.Y * S, Axis.Z * S, C };
-}
-
-inline FQuat MakeQuatLocalXYZ(float RX, float RY, float RZ)
-{
-    const FQuat QX = QuatFromAxisAngle({ 1,0,0 }, RX);
-    const FQuat QY = QuatFromAxisAngle({ 0,1,0 }, RY);
-    const FQuat QZ = QuatFromAxisAngle({ 0,0,1 }, RZ);
-    return QuatMul(QuatMul(QZ, QY), QX); // q = qz * qy * qx
-}
-
 inline FMatrix MakeRotationRowMajorFromQuat(const FQuat& Q)
 {
     // 비정규 안전화
@@ -932,7 +711,7 @@ inline FMatrix FTransform::ToMatrixWithScaleLocalXYZ() const
          0,  1,  0, 0 ,
          0,  0,  1, 0 ,
          1, 0,  0, 0 ,
-         0,  0,  0, 1 
+         0,  0,  0, 1
     };
     // Rotation(FQuat)은 이미 로컬 XYZ 순서로 만들어져 있다고 가정
     FMatrix R = MakeRotationRowMajorFromQuat(Rotation);
@@ -960,7 +739,7 @@ inline FTransform FTransform::operator*(const FTransform& Other) const
     FTransform Result;
 
     // 회전 결합
-    Result.Rotation =  Other.Rotation*Rotation;
+    Result.Rotation = Other.Rotation * Rotation;
     Result.Rotation.Normalize();
 
     // 스케일 결합 (component-wise)
@@ -972,8 +751,8 @@ inline FTransform FTransform::operator*(const FTransform& Other) const
 
     // 위치 결합: R*(S*Other.T) + T
     FVector Scaled(Other.Translation.X * Scale3D.X,
-                   Other.Translation.Y * Scale3D.Y,
-                   Other.Translation.Z * Scale3D.Z);
+        Other.Translation.Y * Scale3D.Y,
+        Other.Translation.Z * Scale3D.Z);
     FVector Rotated = Rotation.RotateVector(Scaled);
     Result.Translation = Translation + Rotated;
 
@@ -997,8 +776,8 @@ inline FTransform FTransform::Inverse() const
 
     // InvTrans = -(InvRot * (InvScale * T))
     FVector Scaled(Translation.X * InvScale.X,
-                   Translation.Y * InvScale.Y,
-                   Translation.Z * InvScale.Z);
+        Translation.Y * InvScale.Y,
+        Translation.Z * InvScale.Z);
     FVector Rotated = InvRot.RotateVector(Scaled);
     FVector InvTrans(-Rotated.X, -Rotated.Y, -Rotated.Z);
 
@@ -1007,4 +786,9 @@ inline FTransform FTransform::Inverse() const
     Out.Scale3D = InvScale;
     Out.Translation = InvTrans;
     return Out;
+}
+
+inline FMatrix FTransform::GetWorldMatrix() const
+{
+    return FMatrix::FromTRS(Translation, Rotation, Scale3D);
 }

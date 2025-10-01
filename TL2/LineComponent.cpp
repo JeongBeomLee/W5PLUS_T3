@@ -2,7 +2,7 @@
 #include "LineComponent.h"
 #include "Renderer.h"
 
-void ULineComponent::GetWorldLineData(TArray<FVector>& OutStartPoints, TArray<FVector>& OutEndPoints, TArray<FVector4>& OutColors) const
+void ULineComponent::GetWorldLineData(TArray<FVector>& OutStartPoints, TArray<FVector>& OutEndPoints, TArray<FVector4>& OutColors)
 {
     if (!bLinesVisible || Lines.empty())
     {
@@ -11,17 +11,17 @@ void ULineComponent::GetWorldLineData(TArray<FVector>& OutStartPoints, TArray<FV
         OutColors.clear();
         return;
     }
-    
-    FMatrix worldMatrix = GetWorldMatrix();
+
+    const FMatrix& worldMatrix = GetWorldMatrix();
     size_t lineCount = Lines.size();
-    
+
     for (const ULine* Line : Lines)
     {
         if (Line)
         {
             FVector worldStart, worldEnd;
             Line->GetWorldPoints(worldMatrix, worldStart, worldEnd);
-            
+
             OutStartPoints.push_back(worldStart);
             OutEndPoints.push_back(worldEnd);
             OutColors.push_back(Line->GetColor());
@@ -45,16 +45,16 @@ ULine* ULineComponent::AddLine(const FVector& StartPoint, const FVector& EndPoin
     ULine* NewLine = NewObject<ULine>();
     NewLine->SetLine(StartPoint, EndPoint);
     NewLine->SetColor(Color);
-    
+
     Lines.push_back(NewLine);
-    
+
     return NewLine;
 }
 
 void ULineComponent::RemoveLine(ULine* Line)
 {
     if (!Line) return;
-    
+
     auto it = std::find(Lines.begin(), Lines.end(), Line);
     if (it != Lines.end())
     {
@@ -82,10 +82,10 @@ void ULineComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix, cons
 
     TArray<FVector> startPoints, endPoints;
     TArray<FVector4> colors;
-    
+
     // Extract world coordinate line data efficiently
     GetWorldLineData(startPoints, endPoints, colors);
-    
+
     // Add all lines to renderer batch at once
     if (!startPoints.empty())
     {

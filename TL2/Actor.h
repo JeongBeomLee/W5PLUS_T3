@@ -29,8 +29,7 @@ public:
     // ───────────────
     // Transform API
     // ───────────────
-    void SetActorTransform(const FTransform& NewTransform);
-    FTransform GetActorTransform() const;
+    void SetActorTransform(const FTransform& Transform);
 
     void SetActorLocation(const FVector& NewLocation);
     FVector GetActorLocation() const;
@@ -44,18 +43,9 @@ public:
 
     FMatrix GetWorldMatrix() const;
 
-    FVector GetActorForward() const { return GetActorRotation().RotateVector(FVector(0, 1, 0)); }
-    FVector GetActorRight()   const { return GetActorRotation().RotateVector(FVector(1, 0, 0)); }
-    FVector GetActorUp()      const { return GetActorRotation().RotateVector(FVector(0, 0, 1)); }
-
-    void AddActorWorldRotation(const FQuat& DeltaRotation);
-    void AddActorWorldRotation(const FVector& DeltaEuler);
-    void AddActorWorldLocation(const FVector& DeltaRot);
-
-    void AddActorLocalRotation(const FVector& DeltaEuler);
-
-    void AddActorLocalRotation(const FQuat& DeltaRotation);
-    void AddActorLocalLocation(const FVector& DeltaRot);
+    FVector GetActorForward() { return RootComponent->GetForward(); }
+    FVector GetActorRight() { return RootComponent->GetRight(); }
+    FVector GetActorUp() { return RootComponent->GetUp(); }
 
     void SetWorld(UWorld* InWorld) { World = InWorld; }
     UWorld* GetWorld() const { return World; }

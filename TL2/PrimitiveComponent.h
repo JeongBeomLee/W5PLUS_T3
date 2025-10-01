@@ -25,6 +25,8 @@ public:
 
     // 복제 시스템
     virtual UObject* Duplicate() override;
+protected:
+    virtual void RenderDetail() override;
 
 protected:
     UMaterial* Material = nullptr;
