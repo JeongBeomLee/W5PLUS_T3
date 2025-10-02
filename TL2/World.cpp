@@ -34,8 +34,8 @@ UWorld::UWorld() : ResourceManager(UResourceManager::GetInstance())
 
 UWorld::~UWorld()
 {
-	// Level의 Actors 정리 (PIE는 복제된 액터들만 삭제)
-	if (Level)
+	// Editor World Level의 Actors 정리 (PIE는 EndPIE()에서 처리)
+	if (Level && WorldType == EWorldType::Editor)
 	{
 		for (AActor* Actor : Level->GetActors())
 		{

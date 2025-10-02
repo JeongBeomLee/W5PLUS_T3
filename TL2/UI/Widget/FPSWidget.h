@@ -38,6 +38,7 @@ private:
 
 	// 출력을 위한 변수
 	float PreviousTime = 0.0f;
+	float CurrentTime = 0.0f;
 	float PrintFPS;
 	float PrintDeltaTime;
 	bool bShowGraph = false;

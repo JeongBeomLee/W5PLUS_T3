@@ -110,7 +110,7 @@ public:
 
 
     /** === 필요한 엑터 게터 === */
-    const TArray<AActor*>& GetActors() { return Level ? Level->GetActors() : Actors; }
+    const TArray<AActor*>& GetActors() { return Level ? Level->GetActors() : TArray<AActor*>(); }
     const TArray<AActor*>& GetEngineActors() const { return EngineActors; }
     AGizmoActor* GetGizmoActor();
     AGridActor* GetGridActor() { return GridActor; }
@@ -160,10 +160,8 @@ private:
     ULevel* Level = nullptr;
     EWorldType WorldType = EWorldType::Editor;
 
-    /** === 액터 관리 === */
+    /** === 엔진 액터 관리 (Grid, Axis) === */
     TArray<AActor*> EngineActors;
-    /** === 액터 관리 === */
-    TArray<AActor*> Actors;
     
     // Object naming system
     std::map<FString, int32> ObjectTypeCounts;
