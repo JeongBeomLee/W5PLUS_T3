@@ -7,7 +7,9 @@
 USceneComponent::USceneComponent()
     : AttachParent(nullptr)
 {
-
+    RelativeTransform.Translation = FVector(0, 0, 0);
+    RelativeTransform.Rotation = FQuat(0, 0, 0, 1);
+    RelativeTransform.Scale3D = FVector(1, 1, 1);
 }
 
 USceneComponent::~USceneComponent()
@@ -117,6 +119,30 @@ FVector USceneComponent::GetRight()
 FVector USceneComponent::GetUp()
 {
     return GetWorldRotation().GetUp();
+}   
+FVector USceneComponent::GetParentForward()
+{
+    if (AttachParent!= nullptr)
+    {
+        return AttachParent->GetForward();
+    }
+    return FVector(1, 0, 0);
+}
+FVector USceneComponent::GetParentRight()
+{
+    if (AttachParent != nullptr)
+    {
+        return AttachParent->GetRight();
+    }
+    return FVector(0, 1, 0);
+}
+FVector USceneComponent::GetParentUp()
+{
+    if (AttachParent != nullptr)
+    {
+        return AttachParent->GetUp();
+    }
+    return FVector(0, 0, 1);
 }
 const FMatrix& USceneComponent::GetWorldMatrix()
 {
@@ -210,28 +236,15 @@ void USceneComponent::RenderDetail()
             SetRelativeLocation(RelativeTransform.Translation);
         }
 
-        FQuat CurRotate = RelativeTransform.Rotation;
-        FVector PrevEuler = RelativeTransform.Rotation.ToEulerDegree();
-        FVector CurrentEuler = RelativeTransform.Rotation.ToEulerDegree();
-        if (ImGui::DragFloat3("Rotation", &CurrentEuler.X, 0.5f))
+        if (ImGui::DragFloat3("Rotation", &EulerRotation.X, 0.5f))
         {
-            // 증가분 계산
-            FVector DeltaEuler = CurrentEuler - PrevEuler;
-            if (DeltaEuler.X != 0)
-            {
-                CurRotate = FQuat(GetForward(), DeltaEuler.X) * CurRotate;
-            }
-            if (DeltaEuler.Y != 0)
-            {
-                CurRotate = FQuat(GetRight(), DeltaEuler.Y) * CurRotate;
-            }
-            if (DeltaEuler.Z != 0)
-            {
-                CurRotate = FQuat(GetUp(), DeltaEuler.Z)*CurRotate;
-            }
-            // 기존 쿼터니언에 증가분 회전 적용
-            SetRelativeRotation(CurRotate);
+            SetRelativeRotation(FQuat::MakeFromEuler(EulerRotation));
         }
+        FVector Forward = GetForward();
+        FVector PForward = GetParentForward();
+        FVector PRight = GetParentRight();
+        FVector pUp = GetParentUp();
+        Forward.Log();
 
         // Scale 편집
         ImGui::Checkbox("Uniform Scale", &bUniformScale);

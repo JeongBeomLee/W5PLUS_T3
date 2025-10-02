@@ -356,32 +356,56 @@ void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, flo
 
 	FVector Axis{};
 	FVector GizmoPosition = GetActorLocation();
-
-	// ────────────── World / Local 축 선택 ──────────────
-	if (CurrentSpace == EGizmoSpace::World)
+	
+	switch (CurrentMode)
 	{
-		switch (GizmoAxis)
-		{
-		case 1: Axis = FVector(1, 0, 0); break;
-		case 2: Axis = FVector(0, 1, 0); break;
-		case 3: Axis = FVector(0, 0, 1); break;
-		}
+		case EGizmoMode::Translate:
+			if (CurrentSpace == EGizmoSpace::World)
+			{
+				switch (GizmoAxis)
+				{
+				case 1: Axis = FVector(1, 0, 0); break;
+				case 2: Axis = FVector(0, 1, 0); break;
+				case 3: Axis = FVector(0, 0, 1); break;
+				}
+			}
+			else
+			{
+				switch (GizmoAxis)
+				{
+				case 1: Axis = TargetComponent->GetForward();   break; // Local X
+				case 2: Axis = TargetComponent->GetRight(); break; // Local Y
+				case 3: Axis = TargetComponent->GetUp();      break; // Local Z
+				}
+			}
+			break;
 	}
-	else if (CurrentSpace == EGizmoSpace::Local)
-	{
-		switch (GizmoAxis)
-		{
-		case 1: Axis = TargetComponent->GetForward();   break; // Local X
-		case 2: Axis = TargetComponent->GetRight(); break; // Local Y
-		case 3: Axis = TargetComponent->GetUp();      break; // Local Z
-		}
-	}
+	
+	
 
 	// ────────────── 모드별 처리 ──────────────
 	switch (CurrentMode)
 	{
 	case EGizmoMode::Translate:
 	{
+		if (CurrentSpace == EGizmoSpace::World)
+		{
+			switch (GizmoAxis)
+			{
+			case 1: Axis = FVector(1, 0, 0); break;
+			case 2: Axis = FVector(0, 1, 0); break;
+			case 3: Axis = FVector(0, 0, 1); break;
+			}
+		}
+		else if (CurrentSpace == EGizmoSpace::Local)
+		{
+			switch (GizmoAxis)
+			{
+			case 1: Axis = TargetComponent->GetForward();   break; // Local X
+			case 2: Axis = TargetComponent->GetRight(); break; // Local Y
+			case 3: Axis = TargetComponent->GetUp();      break; // Local Z
+			}
+		}
 		FVector2D ScreenAxis = GetStableAxisDirection(Axis, Camera);
 		float px = (MouseDelta.X * ScreenAxis.X + MouseDelta.Y * ScreenAxis.Y);
 		float h = Viewport ? static_cast<float>(Viewport->GetSizeY()) : UInputManager::GetInstance().GetScreenSize().Y;
@@ -484,6 +508,24 @@ void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, flo
 	}
 	case EGizmoMode::Rotate:
 	{
+		if (CurrentSpace == EGizmoSpace::World)
+		{
+			switch (GizmoAxis)
+			{
+			case 1: Axis = FVector(1, 0, 0); break;
+			case 2: Axis = FVector(0, 1, 0); break;
+			case 3: Axis = FVector(0, 0, 1); break;
+			}
+		}
+		else if (CurrentSpace == EGizmoSpace::Local)
+		{
+			switch (GizmoAxis)
+			{
+			case 1: Axis = TargetComponent->GetParentForward();   break; // Local X
+			case 2: Axis = TargetComponent->GetParentRight(); break; // Local Y
+			case 3: Axis = TargetComponent->GetParentUp();      break; // Local Z
+			}
+		}
 		float RotationSpeed = 0.5f;
 		float DeltaAngleX = MouseDeltaX * RotationSpeed;
 		float DeltaAngleY = MouseDeltaY * RotationSpeed;

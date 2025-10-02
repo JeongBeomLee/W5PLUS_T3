@@ -275,6 +275,14 @@ struct FVector
     {
         return FVector(1.f, 1.f, 1.f);
     }
+    const static FVector Forward;
+    const static FVector Right;
+    const static FVector Up;
+    const static FVector UnitX;
+    const static FVector UnitY;
+    const static FVector UnitZ;
+    const static FVector One;
+    const static FVector Zero;
 
     void Log()
     {

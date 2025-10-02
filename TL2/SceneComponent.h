@@ -45,6 +45,9 @@ public:
     FVector GetRight();
     FVector GetUp();
 
+    FVector GetParentForward();
+    FVector GetParentRight();
+    FVector GetParentUp();
     const FMatrix& GetWorldMatrix(); // ToMatrixWithScale
 
     // ──────────────────────────────
@@ -84,5 +87,5 @@ private:
     bool bTransformDirty = true;
 
     // 디테일 패널에서 회전 편집용 (짐벌 락 회피)
-    FVector LastEulerRotation = FVector(0, 0, 0);
+    FVector EulerRotation = FVector(0, 0, 0);
 };
