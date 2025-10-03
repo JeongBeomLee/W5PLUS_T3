@@ -354,28 +354,39 @@ void AGizmoActor::OnDrag(USceneComponent* TargetComponent, uint32 GizmoAxis, flo
 	}
 	FVector2D MouseDelta = FVector2D(MouseDeltaX, MouseDeltaY);
 
-	FVector Axis{};
+	FVector GizmoDir{};
 	FVector GizmoPosition = GetActorLocation();
+	FVector CamToGizmo = GizmoPosition - Camera->GetActorLocation();
+	FVector CrossUp = FVector::Cross(CamToGizmo, GizmoPosition);
+	FVector PlaneNormal = FVector::Cross(CrossUp, GizmoAxis);
+	FPlane GizmoPlane = FPlane(PlaneNormal, GizmoPosition);
+	
+
+
 	
 	switch (CurrentMode)
 	{
 		case EGizmoMode::Translate:
+			//카메라 -> 기즈모위치, 기즈모축을 외적한 벡터와
+			//기즈모축으로  이루어진 평면을 구한다.
+			//마우스의 스크린 움직임을 해당평면에 투영시킨다.
+			//마우스레이와 평면의 충돌지점을 구해서 적용
 			if (CurrentSpace == EGizmoSpace::World)
 			{
 				switch (GizmoAxis)
 				{
-				case 1: Axis = FVector(1, 0, 0); break;
-				case 2: Axis = FVector(0, 1, 0); break;
-				case 3: Axis = FVector(0, 0, 1); break;
+				case 1: GizmoDir = FVector::Forward; break;
+				case 2: GizmoDir = FVector::Right; break;
+				case 3: GizmoDir = FVector::Up; break;
 				}
 			}
 			else
 			{
 				switch (GizmoAxis)
 				{
-				case 1: Axis = TargetComponent->GetForward();   break; // Local X
-				case 2: Axis = TargetComponent->GetRight(); break; // Local Y
-				case 3: Axis = TargetComponent->GetUp();      break; // Local Z
+				case 1: GizmoDir = TargetComponent->GetForward();   break; // Local X
+				case 2: GizmoDir = TargetComponent->GetRight(); break; // Local Y
+				case 3: GizmoDir = TargetComponent->GetUp();      break; // Local Z
 				}
 			}
 			break;

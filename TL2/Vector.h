@@ -800,3 +800,37 @@ inline FMatrix FTransform::GetWorldMatrix() const
 {
     return FMatrix::FromTRS(Translation, Rotation, Scale3D);
 }
+
+
+
+struct FPlane
+{
+    FVector Normal;
+    float D;
+    FPlane(const FVector& InNormal, const FVector& Pos)
+    {
+        Normal = InNormal.GetNormalized();
+        D = -Normal.Dot(Pos);
+    }
+
+    FVector IntersectRay(const FVector& RayDir, const FVector& RayOrigin)
+    {
+        //HitPos = P, PlaneNormal = N, PlaneD = D, 
+        //RayDir = V, RayOrigin = O
+        //N * P + D = 0
+        //P = t * V + O
+        //t를 구하면 됨
+        //t(N * V) + N * O + D = 0
+        //t = -(N * O + D) / (N * V)
+        //평면의 노말과 레이의 방향이 90도면 구할 수 없음
+        float NdotV = Normal.Dot(RayDir);
+        if (abs(NdotV) < KINDA_SMALL_NUMBER)
+        {
+            return FVector::Zero;
+        }
+        float NdotO = Normal.Dot(RayOrigin);
+        float T = -(NdotO + D) / NdotV;
+        FVector HitPos = RayOrigin + RayDir * T;
+        return HitPos;
+    }
+};
