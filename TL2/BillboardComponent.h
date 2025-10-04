@@ -4,6 +4,9 @@
 // Match With GPU's BillboardInfo
 struct BillboardBufferType
 {
+	FMatrix ViewMatrix;
+	FMatrix ProjectionMatrix;
+	
 	FVector WorldPos;
 	FMatrix InverseViewMat;
 	float TextureHalfWidth;

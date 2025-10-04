@@ -25,7 +25,7 @@ void UQuad::Load(FMeshData* InData, ID3D11Device* InDevice, EVertexLayoutType In
     CreateVertexBuffer(InData, InDevice, InVertexType);
     CreateIndexBuffer(InData, InDevice);
 
-    VertexCount = static_cast<uint32>(InData->Position.size());
+    VertexCount = static_cast<uint32>(InData->Vertices.size());
     IndexCount = static_cast<uint32>(InData->Indices.size());
 }
 

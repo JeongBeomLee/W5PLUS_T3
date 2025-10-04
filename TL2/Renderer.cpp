@@ -91,9 +91,15 @@ void URenderer::UpdateHighLightConstantBuffer(const uint32 InPicked, const FVect
     RHIDevice->UpdateHighLightConstantBuffers(InPicked, InColor, X, Y, Z, Gizmo);
 }
 
-void URenderer::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix, const FVector& CameraRight, const FVector& CameraUp,const float TextureHeight, const float TextureWidth)
+void URenderer::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix,
+    const FVector& CameraRight, const FVector& CameraUp)
 {
-    RHIDevice->UpdateBillboardConstantBuffers(pos, ViewMatrix, ProjMatrix, CameraRight, CameraUp, TextureHeight, TextureWidth);
+    RHIDevice->UpdateBillboardConstantBuffers(pos, ViewMatrix, ProjMatrix, CameraRight, CameraUp);
+}
+
+void URenderer::UpdateBillboardConstantBuffers(void* InData, uint32 InSize)
+{
+    RHIDevice->UpdateBillboardConstantBuffers(InData, InSize);
 }
 
 void URenderer::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
@@ -369,7 +375,7 @@ void URenderer::BeginLineBatch()
     bLineBatchActive = true;
 
     // Clear previous batch data
-    LineBatchData->Position.clear();
+    LineBatchData->Vertices.clear();
     LineBatchData->Color.clear();
     LineBatchData->Indices.clear();
 }
@@ -378,11 +384,11 @@ void URenderer::AddLine(const FVector& Start, const FVector& End, const FVector4
 {
     if (!bLineBatchActive || !LineBatchData) return;
 
-    uint32 startIndex = static_cast<uint32>(LineBatchData->Position.size());
+    uint32 startIndex = static_cast<uint32>(LineBatchData->Vertices.size());
 
     // Add vertices
-    LineBatchData->Position.push_back(Start);
-    LineBatchData->Position.push_back(End);
+    LineBatchData->Vertices.push_back(Start);
+    LineBatchData->Vertices.push_back(End);
 
     // Add colors
     LineBatchData->Color.push_back(Color);
@@ -401,11 +407,11 @@ void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVecto
     if (StartPoints.size() != EndPoints.size() || StartPoints.size() != Colors.size())
         return;
 
-    uint32 startIndex = static_cast<uint32>(LineBatchData->Position.size());
+    uint32 startIndex = static_cast<uint32>(LineBatchData->Vertices.size());
 
     // Reserve space for efficiency
     size_t lineCount = StartPoints.size();
-    LineBatchData->Position.reserve(LineBatchData->Position.size() + lineCount * 2);
+    LineBatchData->Vertices.reserve(LineBatchData->Vertices.size() + lineCount * 2);
     LineBatchData->Color.reserve(LineBatchData->Color.size() + lineCount * 2);
     LineBatchData->Indices.reserve(LineBatchData->Indices.size() + lineCount * 2);
 
@@ -415,8 +421,8 @@ void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVecto
         uint32 currentIndex = startIndex + static_cast<uint32>(i * 2);
 
         // Add vertices
-        LineBatchData->Position.push_back(StartPoints[i]);
-        LineBatchData->Position.push_back(EndPoints[i]);
+        LineBatchData->Vertices.push_back(StartPoints[i]);
+        LineBatchData->Vertices.push_back(EndPoints[i]);
 
         // Add colors
         LineBatchData->Color.push_back(Colors[i]);
@@ -430,7 +436,7 @@ void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVecto
 
 void URenderer::EndLineBatch(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
 {
-    if (!bLineBatchActive || !LineBatchData || !DynamicLineMesh || LineBatchData->Position.empty())
+    if (!bLineBatchActive || !LineBatchData || !DynamicLineMesh || LineBatchData->Vertices.empty())
     {
         bLineBatchActive = false;
         return;
@@ -479,7 +485,7 @@ void URenderer::ClearLineBatch()
 {
     if (!LineBatchData) return;
 
-    LineBatchData->Position.clear();
+    LineBatchData->Vertices.clear();
     LineBatchData->Color.clear();
     LineBatchData->Indices.clear();
 

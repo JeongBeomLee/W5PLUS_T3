@@ -174,8 +174,8 @@ struct FStaticMesh
 
 struct FMeshData
 {
-	// Position
-	TArray<FVector> Position;
+	// Vertice Position
+	TArray<FVector> Vertices;
 	// 정점 인덱스
 	TArray<uint32> Indices;
     // 중복 없는 정점

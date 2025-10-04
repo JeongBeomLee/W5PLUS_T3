@@ -114,7 +114,7 @@ bool UResourceManager::Add(const FString& InFilePath, FMeshData* InData)
 {
     T* Mesh = NewObject<T>();
     Mesh->Load(InData, Device);
-    Add<T>(InFilePath, Mesh);
+    return Add<T>(InFilePath, Mesh);
 }
 
 //-----definition

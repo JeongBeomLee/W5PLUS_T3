@@ -293,7 +293,7 @@ void D3D11RHI::UpdateModelConstantBuffers(const FMatrix& ModelMatrix)
 }
 
 void D3D11RHI::UpdateBillboardConstantBuffers(const FVector& WorldPos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix,
-const FVector& CameraRight, const FVector& CameraUp, const float TextureHeight, const float TextureWidth)
+const FVector& CameraRight, const FVector& CameraUp)
 {
     D3D11_MAPPED_SUBRESOURCE mapped;
     DeviceContext->Map(BillboardCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
@@ -306,6 +306,19 @@ const FVector& CameraRight, const FVector& CameraUp, const float TextureHeight, 
     dataPtr->InverseViewMat = ViewMatrix.InverseAffine();
    
     DeviceContext->Unmap(BillboardCB, 0);
+    DeviceContext->VSSetConstantBuffers(0, 1, &BillboardCB); // b1 슬롯
+}
+
+void D3D11RHI::UpdateBillboardConstantBuffers(void* InData, uint32 InSize)
+{
+    ID3D11Buffer* D3DBuffer = BillboardCB;
+    D3D11_MAPPED_SUBRESOURCE mapped;
+    DeviceContext->Map(D3DBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
+
+    // 타입에 대해 아무것도 묻지 않고, 그냥 바이트를 복사
+    memcpy(mapped.pData, InData, InSize);
+
+    DeviceContext->Unmap(D3DBuffer, 0);
     DeviceContext->VSSetConstantBuffers(0, 1, &BillboardCB); // b0 슬롯
 }
 

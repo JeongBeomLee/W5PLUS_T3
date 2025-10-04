@@ -45,7 +45,7 @@ void UBillboardComponent::InitializeMesh()
 	
 	FMeshData* BillboardData = new FMeshData;
 	BillboardData->Indices = Indices;
-	BillboardData->Position = Position;
+	BillboardData->Vertices = Position;
 	BillboardData->Color = UVRect; //also can be UVRect
 	BillboardData->UV = Scale;     //also can be Billboard Scale
 
@@ -160,12 +160,14 @@ void UBillboardComponent::Render(URenderer* Renderer, const FMatrix& View, const
 	
 	// Set Billboard Variant
 	BillboardBuffer.InverseViewMat = View.InverseAffine();
+	BillboardBuffer.ViewMatrix = View;
+	BillboardBuffer.ProjectionMatrix = Proj;
 
 	// Set Billboard Location
 	FVector CompPosition = GetWorldLocation() + FVector(0.f, 0.f, 1.f) * Owner->GetActorScale().Z;
 	BillboardBuffer.WorldPos = CompPosition;
 	
-	Renderer->UpdateBillboardConstantBuffers(BillboardBuffer);
+	Renderer->UpdateBillboardConstantBuffers(&BillboardBuffer, sizeof(BillboardBuffer));
 	Renderer->PrepareShader(Material->GetShader());
 	Renderer->OMSetBlendState(true);
 	Renderer->RSSetState(EViewModeIndex::VMI_Unlit);

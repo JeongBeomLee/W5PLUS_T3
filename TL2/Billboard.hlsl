@@ -1,11 +1,9 @@
-cbuffer CameraInfo : register(b0)
+// Match With CPU's BillboardBufferType
+cbuffer BillboardInfo : register(b0)
 {
     row_major matrix viewMatrix;
     row_major matrix projectionMatrix;
-};
-// Match With CPU's BillboardBufferType
-cbuffer BillboardInfo : register(b1)
-{
+    
     float3 compWorldPos;
     row_major matrix viewInverse;
     float halfWidth;

@@ -185,7 +185,7 @@ void UResourceManager::CreateAxisMesh(float Length, const FString& FilePath)
     axisIndices.push_back(5);
 
     FMeshData* MeshData = new FMeshData();
-    MeshData->Position = axisVertices;
+    MeshData->Vertices = axisVertices;
     MeshData->Color = axisColors;
     MeshData->Indices = axisIndices;
 
@@ -215,7 +215,7 @@ void UResourceManager::CreateTextBillboardMesh()
     FMeshData* BillboardData = new FMeshData;
     BillboardData->Indices = Indices;
     // Reserve capacity for MaxQuads (4 vertices per quad)
-    BillboardData->Position.resize(MaxQuads * 4);
+    BillboardData->Vertices.resize(MaxQuads * 4);
     BillboardData->Color.resize(MaxQuads * 4);
     BillboardData->UV.resize(MaxQuads * 4);
 
@@ -301,7 +301,7 @@ void UResourceManager::CreateGridMesh(int N, const FString& FilePath)
     gridIndices.push_back(base - 1);
 
     FMeshData* MeshData = new FMeshData();
-    MeshData->Position = gridVertices;
+    MeshData->Vertices = gridVertices;
     MeshData->Color = gridColors;
     MeshData->Indices = gridIndices;
 
@@ -360,7 +360,7 @@ void UResourceManager::CreateBoxWireframeMesh(const FVector& Min, const FVector&
     // MeshData 생성 및 등록
     // ─────────────────────────────
     FMeshData* MeshData = new FMeshData();
-    MeshData->Position = vertices;
+    MeshData->Vertices = vertices;
     MeshData->Color = colors;
     MeshData->Indices = indices;
 
@@ -404,8 +404,7 @@ void UResourceManager::InitShaderILMap()
     ShaderToInputLayoutMap["Billboard.hlsl"] = layout;
 
     layout.clear();
-
-    // jft
+    
     layout.Add({ "WORLDPOSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 });
     layout.Add({ "SIZE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 });
     layout.Add({ "UVRECT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 });

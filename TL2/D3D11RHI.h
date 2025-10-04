@@ -46,7 +46,8 @@ public:
     void UpdateConstantBuffers(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix) override;
     void UpdateViewConstantBuffers( const FMatrix& ViewMatrix, const FMatrix& ProjMatrix) ;
     void UpdateModelConstantBuffers(const FMatrix& ModelMatrix) ;
-    void UpdateBillboardConstantBuffers(const FVector& WorldPos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix, const FVector& CameraRight, const FVector& CameraUp, const float TextureHeight, const float TextureWidth) override;
+    void UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix, const FVector& CameraRight, const FVector& CameraUp) override;
+    void UpdateBillboardConstantBuffers(void* InData, uint32 InSize) override;
     void UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture) override;
     void UpdateHighLightConstantBuffers(const uint32 InPicked, const FVector& InColor, const uint32 X, const uint32 Y, const uint32 Z, const uint32 Gizmo) override;
     void UpdateColorConstantBuffers(const FVector4& InColor) override;
@@ -143,8 +144,6 @@ private:
     ID3D11Buffer* ConstantBuffer{};
 
     ID3D11SamplerState* DefaultSamplerState = nullptr;
-
-    
 };
 
 
@@ -152,9 +151,9 @@ template<typename TVertex>
 inline HRESULT D3D11RHI::CreateVertexBufferImpl(ID3D11Device* device, const FMeshData& mesh, ID3D11Buffer** outBuffer, D3D11_USAGE usage, UINT cpuAccessFlags)
 {
     std::vector<TVertex> vertexArray;
-    vertexArray.reserve(mesh.Position.size());
+    vertexArray.reserve(mesh.Vertices.size());
 
-    for (size_t i = 0; i < mesh.Position.size(); ++i) {
+    for (size_t i = 0; i < mesh.Vertices.size(); ++i) {
         TVertex vtx{};
         vtx.FillFrom(mesh, i);
         vertexArray.push_back(vtx);
