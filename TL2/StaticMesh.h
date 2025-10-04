@@ -12,8 +12,8 @@ public:
     UStaticMesh() = default;
     virtual ~UStaticMesh() override;
 
-    void Load(const FString& InFilePath, ID3D11Device* InDevice, EVertexLayoutType InVertexType = EVertexLayoutType::PositionColorTexturNormal);
-    void Load(FMeshData* InData, ID3D11Device* InDevice, EVertexLayoutType InVertexType = EVertexLayoutType::PositionColorTexturNormal);
+    virtual void Load(const FString& InFilePath, ID3D11Device* InDevice, EVertexLayoutType InVertexType = EVertexLayoutType::PositionColorTextureNormal);
+    virtual void Load(FMeshData* InData, ID3D11Device* InDevice, EVertexLayoutType InVertexType = EVertexLayoutType::PositionColorTextureNormal);
 
     ID3D11Buffer* GetVertexBuffer() const { return VertexBuffer; }
     ID3D11Buffer* GetIndexBuffer() const { return IndexBuffer; }
@@ -34,19 +34,19 @@ public:
     void BuildMeshBVH();
     FNarrowPhaseBVHNode* GetMeshBVH() const { return MeshBVH; }
 
-private:
-    void CreateVertexBuffer(FMeshData* InMeshData, ID3D11Device* InDevice, EVertexLayoutType InVertexType);
-	void CreateVertexBuffer(FStaticMesh* InStaticMesh, ID3D11Device* InDevice, EVertexLayoutType InVertexType);
-    void CreateIndexBuffer(FMeshData* InMeshData, ID3D11Device* InDevice);
-	void CreateIndexBuffer(FStaticMesh* InStaticMesh, ID3D11Device* InDevice);
-    void ReleaseResources();
+protected:
+    virtual void CreateVertexBuffer(FMeshData* InMeshData, ID3D11Device* InDevice, EVertexLayoutType InVertexType);
+	virtual void CreateVertexBuffer(FStaticMesh* InStaticMesh, ID3D11Device* InDevice, EVertexLayoutType InVertexType);
+    virtual void CreateIndexBuffer(FMeshData* InMeshData, ID3D11Device* InDevice);
+	virtual void CreateIndexBuffer(FStaticMesh* InStaticMesh, ID3D11Device* InDevice);
+    virtual void ReleaseResources();
 
     // GPU 리소스
     ID3D11Buffer* VertexBuffer = nullptr;
     ID3D11Buffer* IndexBuffer = nullptr;
     uint32 VertexCount = 0;     // 정점 개수
-    uint32 IndexCount = 0;     // 버텍스 점의 개수 
-    EVertexLayoutType VertexType = EVertexLayoutType::PositionColorTexturNormal;  // 버텍스 타입
+    uint32 IndexCount = 0;     // 버텍스 점의 개수
+    EVertexLayoutType VertexType = EVertexLayoutType::PositionColorTextureNormal;  // 버텍스 타입
 
 	// CPU 리소스
     FStaticMesh* StaticMeshAsset = nullptr;

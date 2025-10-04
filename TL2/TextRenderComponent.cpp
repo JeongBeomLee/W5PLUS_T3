@@ -22,7 +22,7 @@ UTextRenderComponent::UTextRenderComponent()
 
     //if(UResourceManager::GetInstance().Get<UMaterial>())
     auto& RM = UResourceManager::GetInstance();
-    TextQuad = RM.Get<UTextQuad>("TextBillboard");
+    TextQuad = RM.Get<UQuad>("TextBillboard");
     if (auto* M = RM.Get<UMaterial>("TextBillboard"))
     {
         Material = M;
@@ -94,8 +94,8 @@ TArray<FBillboardVertexInfo_GPU> UTextRenderComponent::CreateVerticesForString(c
         Info.Position[1] = CharHeight;
         Info.Position[2] = 0.f;
 
-        Info.CharSize[0] = 1.f;
-        Info.CharSize[1] = 1.f;
+        Info.Scale[0] = 1.f;
+        Info.Scale[1] = 1.f;
 
         Info.UVRect[0] = u;
         Info.UVRect[1] = v;
@@ -105,8 +105,8 @@ TArray<FBillboardVertexInfo_GPU> UTextRenderComponent::CreateVerticesForString(c
         Info.Position[1] = CharHeight;
         Info.Position[2] = 0.f;
 
-        Info.CharSize[0] = 1.f;
-        Info.CharSize[1] = 1.f;
+        Info.Scale[0] = 1.f;
+        Info.Scale[1] = 1.f;
 
         Info.UVRect[0] = u+w;
         Info.UVRect[1] = v;
@@ -116,8 +116,8 @@ TArray<FBillboardVertexInfo_GPU> UTextRenderComponent::CreateVerticesForString(c
         Info.Position[1] = 0.f;
         Info.Position[2] = 0.f;
 
-        Info.CharSize[0] = 1.f;
-        Info.CharSize[1] = 1.f;
+        Info.Scale[0] = 1.f;
+        Info.Scale[1] = 1.f;
 
         Info.UVRect[0] = u;
         Info.UVRect[1] = v+h;
@@ -127,8 +127,8 @@ TArray<FBillboardVertexInfo_GPU> UTextRenderComponent::CreateVerticesForString(c
         Info.Position[1] = 0.f;
         Info.Position[2] = 0.f;
 
-        Info.CharSize[0] = 1.f;
-        Info.CharSize[1] = 1.f;
+        Info.Scale[0] = 1.f;
+        Info.Scale[1] = 1.f;
 
         Info.UVRect[0] = u+w;
         Info.UVRect[1] = v+h;

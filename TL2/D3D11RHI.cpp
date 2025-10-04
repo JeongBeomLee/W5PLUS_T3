@@ -68,12 +68,13 @@ struct ColorBufferType
 
 struct BillboardBufferType
 {
-    FVector pos;
+    FVector WorldPos;
     FMatrix View;
     FMatrix Proj;
     FMatrix InverseViewMat;
-    /*FVector cameraRight;
-    FVector cameraUp;*/
+    float TextureHalfHeight;
+    float TextureHalfWidth;
+    float Scale;
 };
 
 void D3D11RHI::Initialize(HWND hWindow)
@@ -248,15 +249,10 @@ HRESULT D3D11RHI::CreateIndexBuffer(ID3D11Device* device, const FStaticMesh* mes
     return device->CreateBuffer(&ibd, &iinitData, outBuffer);
 }
 
-//이거 두개를 나눔
 void D3D11RHI::UpdateConstantBuffers(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix)
 {
-   
     UpdateModelConstantBuffers(ModelMatrix);
-   
     UpdateViewConstantBuffers(ViewMatrix, ProjMatrix);
-    
- 
 }
 
 void D3D11RHI::UpdateViewConstantBuffers(const FMatrix& ViewMatrix, const FMatrix& ProjMatrix)
@@ -284,7 +280,6 @@ void D3D11RHI::UpdateModelConstantBuffers(const FMatrix& ModelMatrix)
 {
     // b0 : 모델 행렬
     {
-
         D3D11_MAPPED_SUBRESOURCE mapped;
         DeviceContext->Map(ModelCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
         auto* dataPtr = reinterpret_cast<ModelBufferType*>(mapped.pData);
@@ -297,22 +292,19 @@ void D3D11RHI::UpdateModelConstantBuffers(const FMatrix& ModelMatrix)
     }
 }
 
-void D3D11RHI::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix,
-    const FVector& CameraRight, const FVector& CameraUp)
+void D3D11RHI::UpdateBillboardConstantBuffers(const FVector& WorldPos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix,
+const FVector& CameraRight, const FVector& CameraUp, const float TextureHeight, const float TextureWidth)
 {
-    
     D3D11_MAPPED_SUBRESOURCE mapped;
     DeviceContext->Map(BillboardCB, 0, D3D11_MAP_WRITE_DISCARD, 0, &mapped);
     auto* dataPtr = reinterpret_cast<BillboardBufferType*>(mapped.pData);
 
     // HLSL 기본 row-major와 맞추기 위해 전치
-    dataPtr->pos = pos;
+    dataPtr->WorldPos = WorldPos;
     dataPtr->View = ViewMatrix;
     dataPtr->Proj = ProjMatrix;
     dataPtr->InverseViewMat = ViewMatrix.InverseAffine();
-    //dataPtr->cameraRight = CameraRight;
-    //dataPtr->cameraUp = CameraUp;
-
+   
     DeviceContext->Unmap(BillboardCB, 0);
     DeviceContext->VSSetConstantBuffers(0, 1, &BillboardCB); // b0 슬롯
 }

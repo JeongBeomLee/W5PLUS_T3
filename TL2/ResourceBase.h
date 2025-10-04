@@ -2,6 +2,9 @@
 #include <d3d11.h>
 #include "Object.h"
 
+///<summary>
+///
+///</summary>
 class UResourceBase : public UObject
 {
 public:

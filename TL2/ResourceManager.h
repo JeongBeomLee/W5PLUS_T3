@@ -46,7 +46,7 @@ public:
 
     // 전체 해제
     void Clear();
-
+    
     void CreateAxisMesh(float Length, const FString& FilePath);
     void CreateTextBillboardMesh();
     void CreateGridMesh(int N, const FString& FilePath);
@@ -57,6 +57,8 @@ public:
     void InitShaderILMap();
     void InitTexToShaderMap();
 
+    template<typename T>
+    bool Add(const FString& InFilePath, FMeshData* InData);
     template<typename T>
     bool Add(const FString& InFilePath, UObject* InObject);
     template<typename T>
@@ -106,6 +108,15 @@ protected:
 private:
     TMap<FString, UMaterial*> MaterialMap;
 };
+
+template <typename T>
+bool UResourceManager::Add(const FString& InFilePath, FMeshData* InData)
+{
+    T* Mesh = NewObject<T>();
+    Mesh->Load(InData, Device);
+    Add<T>(InFilePath, Mesh);
+}
+
 //-----definition
 template<typename T>
 bool UResourceManager::Add(const FString& InFilePath, UObject* InObject)
@@ -158,7 +169,7 @@ ResourceType UResourceManager::GetResourceType()
 {
     if (T::StaticClass() == UStaticMesh::StaticClass())
         return ResourceType::StaticMesh;
-    if (T::StaticClass() == UTextQuad::StaticClass())
+    if (T::StaticClass() == UQuad::StaticClass())
         return ResourceType::TextQuad;
     if (T::StaticClass() == UDynamicMesh::StaticClass())
         return ResourceType::DynamicMesh;

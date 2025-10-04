@@ -9,7 +9,7 @@ struct FVertexSimple
 
     void FillFrom(const FMeshData& mesh, size_t i)
     {
-        Position = mesh.Vertices[i];
+        Position = mesh.Position[i];
         Color = (i < mesh.Color.size()) ? mesh.Color[i] : FVector4(1, 1, 1, 1);
     }
 
@@ -28,7 +28,7 @@ struct FVertexDynamic
 
     void FillFrom(const FMeshData& mesh, size_t i)
  {
-        Position = mesh.Vertices[i];
+        Position = mesh.Position[i];
         Color = (i < mesh.Color.size()) ? mesh.Color[i] : FVector4(1, 1, 1, 1);
         UV = (i < mesh.UV.size()) ? mesh.UV[i] : FVector2D(0, 0);
         Normal = (i < mesh.Normal.size()) ? mesh.Normal[i] : FVector(0, 0, 1);
@@ -44,21 +44,21 @@ struct FVertexDynamic
 
 struct FBillboardVertexInfo {
     FVector WorldPosition;
-    FVector2D CharSize;//char scale
+    FVector2D Scale;
     FVector4 UVRect;//uv start && uv size
 };
 
 struct FBillboardVertexInfo_GPU {
     float Position[3];
-    float CharSize[2];
+    float Scale[2];
     float UVRect[4];
 
     void FillFrom(const FMeshData& mesh, size_t i) {
-        Position[0] = mesh.Vertices[i].X;
-        Position[1] = mesh.Vertices[i].Y;
-        Position[2] = mesh.Vertices[i].Z;
-        CharSize[0] = (i < mesh.UV.size()) ? mesh.UV[i].X : 1.0f;
-        CharSize[1] = (i < mesh.UV.size()) ? mesh.UV[i].Y : 1.0f;
+        Position[0] = mesh.Position[i].X;
+        Position[1] = mesh.Position[i].Y;
+        Position[2] = mesh.Position[i].Z;
+        Scale[0] = (i < mesh.UV.size()) ? mesh.UV[i].X : 1.0f;
+        Scale[1] = (i < mesh.UV.size()) ? mesh.UV[i].Y : 1.0f;
         if (i < mesh.Color.size()) {
             UVRect[0] = mesh.Color[i].X;
             UVRect[1] = mesh.Color[i].Y;
@@ -75,8 +75,8 @@ struct FBillboardVertexInfo_GPU {
         Position[1] = src.pos.Y;
         Position[2] = src.pos.Z;
 
-        CharSize[0] = src.tex.X;
-        CharSize[1] = src.tex.Y;
+        Scale[0] = src.tex.X;
+        Scale[1] = src.tex.Y;
 
         UVRect[0] = src.color.X;
         UVRect[1] = src.color.Y;

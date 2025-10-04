@@ -174,18 +174,16 @@ struct FStaticMesh
 
 struct FMeshData
 {
-	// 중복 없는 정점
-	TArray<FVector> Vertices;//also can be billboard world position
+	// Position
+	TArray<FVector> Position;
 	// 정점 인덱스
 	TArray<uint32> Indices;
     // 중복 없는 정점
     TArray<FVector4> Color;//also can be UVRect
     // UV 좌표
-    TArray<FVector2D> UV;//also can be Billboard size
+    TArray<FVector2D> UV;//also can be Billboard Scale
     // 노말 좌표
     TArray<FVector> Normal;
-    //
-    
 };
 enum class EPrimitiveTopology
 {
@@ -278,7 +276,7 @@ enum class EVertexLayoutType : uint8
     None,
 
     PositionColor,
-    PositionColorTexturNormal,
+    PositionColorTextureNormal,
 
     PositionBillBoard,
     PositionCollisionDebug,
@@ -396,5 +394,4 @@ enum class EWorldType : uint8
     PIE,
     Game
 };
-
 //#endif /** UE_ENUMS_H */

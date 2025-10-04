@@ -91,9 +91,9 @@ void URenderer::UpdateHighLightConstantBuffer(const uint32 InPicked, const FVect
     RHIDevice->UpdateHighLightConstantBuffers(InPicked, InColor, X, Y, Z, Gizmo);
 }
 
-void URenderer::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix, const FVector& CameraRight, const FVector& CameraUp)
+void URenderer::UpdateBillboardConstantBuffers(const FVector& pos, const FMatrix& ViewMatrix, const FMatrix& ProjMatrix, const FVector& CameraRight, const FVector& CameraUp,const float TextureHeight, const float TextureWidth)
 {
-    RHIDevice->UpdateBillboardConstantBuffers(pos, ViewMatrix, ProjMatrix, CameraRight, CameraUp);
+    RHIDevice->UpdateBillboardConstantBuffers(pos, ViewMatrix, ProjMatrix, CameraRight, CameraUp, TextureHeight, TextureWidth);
 }
 
 void URenderer::UpdatePixelConstantBuffers(const FObjMaterialInfo& InMaterialInfo, bool bHasMaterial, bool bHasTexture)
@@ -127,7 +127,7 @@ void URenderer::DrawIndexedPrimitiveComponent(UStaticMesh* InMesh, D3D11_PRIMITI
     case EVertexLayoutType::PositionColor:
         stride = sizeof(FVertexSimple);
         break;
-    case EVertexLayoutType::PositionColorTexturNormal:
+    case EVertexLayoutType::PositionColorTextureNormal:
         stride = sizeof(FVertexDynamic);
         break;
     case EVertexLayoutType::PositionBillBoard:
@@ -258,13 +258,11 @@ void URenderer::DrawIndexedPrimitiveComponent(UTextRenderComponent* Comp, D3D11_
     RHIDevice->GetDeviceContext()->DrawIndexed(Comp->GetStaticMesh()->GetIndexCount(), 0, 0);
     StatsCollector.IncrementDrawCalls();
 }
-
-void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology)
+// FBillboardVertexInfo_GPU 
+void URenderer::DrawIndexedPrimitiveComponent(UStaticMeshComponent* Comp, D3D11_PRIMITIVE_TOPOLOGY InTopology)
 {
     URenderingStatsCollector& StatsCollector = URenderingStatsCollector::GetInstance();
-
-    // 디버그: TextRenderComponent 렌더링 통계
-
+    
     UINT Stride = sizeof(FBillboardVertexInfo_GPU);
     ID3D11Buffer* VertexBuff = Comp->GetStaticMesh()->GetVertexBuffer();
     ID3D11Buffer* IndexBuff = Comp->GetStaticMesh()->GetIndexBuffer();
@@ -284,10 +282,9 @@ void URenderer::DrawIndexedPrimitiveComponent(UBillboardComponent* Comp, D3D11_P
         StatsCollector.IncrementShaderChanges();
         LastShader = CompShader;
     }
-
+    
     RHIDevice->GetDeviceContext()->IASetInputLayout(CompShader->GetInputLayout());
-
-
+    
     UINT offset = 0;
     RHIDevice->GetDeviceContext()->IASetVertexBuffers(
         0, 1, &VertexBuff, &Stride, &offset
@@ -372,7 +369,7 @@ void URenderer::BeginLineBatch()
     bLineBatchActive = true;
 
     // Clear previous batch data
-    LineBatchData->Vertices.clear();
+    LineBatchData->Position.clear();
     LineBatchData->Color.clear();
     LineBatchData->Indices.clear();
 }
@@ -381,11 +378,11 @@ void URenderer::AddLine(const FVector& Start, const FVector& End, const FVector4
 {
     if (!bLineBatchActive || !LineBatchData) return;
 
-    uint32 startIndex = static_cast<uint32>(LineBatchData->Vertices.size());
+    uint32 startIndex = static_cast<uint32>(LineBatchData->Position.size());
 
     // Add vertices
-    LineBatchData->Vertices.push_back(Start);
-    LineBatchData->Vertices.push_back(End);
+    LineBatchData->Position.push_back(Start);
+    LineBatchData->Position.push_back(End);
 
     // Add colors
     LineBatchData->Color.push_back(Color);
@@ -404,11 +401,11 @@ void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVecto
     if (StartPoints.size() != EndPoints.size() || StartPoints.size() != Colors.size())
         return;
 
-    uint32 startIndex = static_cast<uint32>(LineBatchData->Vertices.size());
+    uint32 startIndex = static_cast<uint32>(LineBatchData->Position.size());
 
     // Reserve space for efficiency
     size_t lineCount = StartPoints.size();
-    LineBatchData->Vertices.reserve(LineBatchData->Vertices.size() + lineCount * 2);
+    LineBatchData->Position.reserve(LineBatchData->Position.size() + lineCount * 2);
     LineBatchData->Color.reserve(LineBatchData->Color.size() + lineCount * 2);
     LineBatchData->Indices.reserve(LineBatchData->Indices.size() + lineCount * 2);
 
@@ -418,8 +415,8 @@ void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVecto
         uint32 currentIndex = startIndex + static_cast<uint32>(i * 2);
 
         // Add vertices
-        LineBatchData->Vertices.push_back(StartPoints[i]);
-        LineBatchData->Vertices.push_back(EndPoints[i]);
+        LineBatchData->Position.push_back(StartPoints[i]);
+        LineBatchData->Position.push_back(EndPoints[i]);
 
         // Add colors
         LineBatchData->Color.push_back(Colors[i]);
@@ -433,7 +430,7 @@ void URenderer::AddLines(const TArray<FVector>& StartPoints, const TArray<FVecto
 
 void URenderer::EndLineBatch(const FMatrix& ModelMatrix, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)
 {
-    if (!bLineBatchActive || !LineBatchData || !DynamicLineMesh || LineBatchData->Vertices.empty())
+    if (!bLineBatchActive || !LineBatchData || !DynamicLineMesh || LineBatchData->Position.empty())
     {
         bLineBatchActive = false;
         return;
@@ -482,7 +479,7 @@ void URenderer::ClearLineBatch()
 {
     if (!LineBatchData) return;
 
-    LineBatchData->Vertices.clear();
+    LineBatchData->Position.clear();
     LineBatchData->Color.clear();
     LineBatchData->Indices.clear();
 

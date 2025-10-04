@@ -9,12 +9,11 @@
 
 UStaticMeshComponent::UStaticMeshComponent()
 {
-    SetMaterial("StaticMeshShader.hlsl", EVertexLayoutType::PositionColorTexturNormal);
+    SetMaterial("StaticMeshShader.hlsl", EVertexLayoutType::PositionColorTextureNormal);
 }
 
 UStaticMeshComponent::~UStaticMeshComponent()
 {
-
 }
 
 void UStaticMeshComponent::Render(URenderer* Renderer, const FMatrix& ViewMatrix, const FMatrix& ProjectionMatrix)

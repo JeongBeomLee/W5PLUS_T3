@@ -185,7 +185,7 @@ void UResourceManager::CreateAxisMesh(float Length, const FString& FilePath)
     axisIndices.push_back(5);
 
     FMeshData* MeshData = new FMeshData();
-    MeshData->Vertices = axisVertices;
+    MeshData->Position = axisVertices;
     MeshData->Color = axisColors;
     MeshData->Indices = axisIndices;
 
@@ -209,26 +209,20 @@ void UResourceManager::CreateTextBillboardMesh()
         Indices.push_back(i * 4 + 1);
         Indices.push_back(i * 4 + 3);
     }
-
-
+    
     //if(UResourceManager::GetInstance().Get<UMaterial>())
     const uint32 MaxQuads = 100; // capacity
     FMeshData* BillboardData = new FMeshData;
     BillboardData->Indices = Indices;
     // Reserve capacity for MaxQuads (4 vertices per quad)
-    BillboardData->Vertices.resize(MaxQuads * 4);
+    BillboardData->Position.resize(MaxQuads * 4);
     BillboardData->Color.resize(MaxQuads * 4);
     BillboardData->UV.resize(MaxQuads * 4);
 
-    UTextQuad* Mesh = NewObject<UTextQuad>();
+    UQuad* Mesh = NewObject<UQuad>();
     Mesh->Load(BillboardData, Device);
-    Add<UTextQuad>("TextBillboard", Mesh);
-
-    // jft
-    UTextQuad* Mesh2 = NewObject<UTextQuad>();
-    Mesh2->Load(BillboardData, Device);
-    Add<UTextQuad>("IconBillboard", Mesh2);
-
+    Add<UQuad>("TextBillboard", Mesh);
+    
     UMeshLoader::GetInstance().AddMeshData("TextBillboard", BillboardData);
 }
 
@@ -307,7 +301,7 @@ void UResourceManager::CreateGridMesh(int N, const FString& FilePath)
     gridIndices.push_back(base - 1);
 
     FMeshData* MeshData = new FMeshData();
-    MeshData->Vertices = gridVertices;
+    MeshData->Position = gridVertices;
     MeshData->Color = gridColors;
     MeshData->Indices = gridIndices;
 
@@ -366,7 +360,7 @@ void UResourceManager::CreateBoxWireframeMesh(const FVector& Min, const FVector&
     // MeshData 생성 및 등록
     // ─────────────────────────────
     FMeshData* MeshData = new FMeshData();
-    MeshData->Vertices = vertices;
+    MeshData->Position = vertices;
     MeshData->Color = colors;
     MeshData->Indices = indices;
 
@@ -383,7 +377,7 @@ void UResourceManager::CreateDefaultShader()
 {
     // 템플릿 Load 멤버함수 호출해서 Resources[UShader의 typeIndex][shader 파일 이름]에 UShader 포인터 할당
     Load<UShader>("Primitive.hlsl", EVertexLayoutType::PositionColor);
-    Load<UShader>("StaticMeshShader.hlsl", EVertexLayoutType::PositionColorTexturNormal);
+    Load<UShader>("StaticMeshShader.hlsl", EVertexLayoutType::PositionColorTextureNormal);
     Load<UShader>("Billboard.hlsl", EVertexLayoutType::PositionBillBoard);
 }
 
@@ -479,7 +473,7 @@ void UResourceManager::CreateIconBillboardTexture()
 
 void UResourceManager::UpdateDynamicVertexBuffer(const FString& Name, TArray<FBillboardVertexInfo_GPU>& vertices)
 {
-    UTextQuad* Mesh = Get<UTextQuad>(Name);
+    UQuad* Mesh = Get<UQuad>(Name);
 
     const uint32_t quadCount = static_cast<uint32_t>(vertices.size() / 4);
     Mesh->SetIndexCount(quadCount * 6);

@@ -70,7 +70,7 @@ bool UDynamicMesh::UpdateData(FMeshData* InData, ID3D11DeviceContext* InContext)
     if (!bIsInitialized || !InData || !InContext)
         return false;
 
-    uint32 vertexCount = static_cast<uint32>(InData->Vertices.size());
+    uint32 vertexCount = static_cast<uint32>(InData->Position.size());
     uint32 indexCount = static_cast<uint32>(InData->Indices.size());
 
     // Check bounds
@@ -97,7 +97,7 @@ bool UDynamicMesh::UpdateData(FMeshData* InData, ID3D11DeviceContext* InContext)
         FVertexSimple* vertices = static_cast<FVertexSimple*>(mappedVertex.pData);
         for (uint32 i = 0; i < vertexCount; ++i)
         {
-            vertices[i].Position = InData->Vertices[i];
+            vertices[i].Position = InData->Position[i];
             vertices[i].Color = InData->Color[i];
         }
     }

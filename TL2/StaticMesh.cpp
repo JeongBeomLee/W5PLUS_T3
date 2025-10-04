@@ -47,7 +47,7 @@ void UStaticMesh::Load(FMeshData* InData, ID3D11Device* InDevice, EVertexLayoutT
     CreateVertexBuffer(InData, InDevice, InVertexType);
     CreateIndexBuffer(InData, InDevice);
 
-    VertexCount = static_cast<uint32>(InData->Vertices.size());
+    VertexCount = static_cast<uint32>(InData->Position.size());
     IndexCount = static_cast<uint32>(InData->Indices.size());
     BuildMeshBVH();
 }

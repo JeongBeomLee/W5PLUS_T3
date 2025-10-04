@@ -7,7 +7,6 @@
 void UMaterial::Load(const FString& InFilePath, ID3D11Device* InDevice)
 {
     // 기본 쉐이더 로드 (LayoutType에 따라)
-
     if (InFilePath.find(".dds") != std::string::npos)
     {
         FString shaderName = UResourceManager::GetInstance().GetProperShader(InFilePath);
@@ -25,8 +24,8 @@ void UMaterial::Load(const FString& InFilePath, ID3D11Device* InDevice)
     }
 }
 
-void UMaterial::SetShader( UShader* ShaderResource) {
-    
+void UMaterial::SetShader(UShader* ShaderResource)
+{
 	Shader = ShaderResource;
 }
 

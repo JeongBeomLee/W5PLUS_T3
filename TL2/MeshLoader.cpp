@@ -121,10 +121,10 @@ FMeshData* UMeshLoader::LoadMesh(const std::filesystem::path& FilePath)
         }
         else
         {
-            uint32 newIndex = static_cast<uint32>(MeshData->Vertices.size());
+            uint32 newIndex = static_cast<uint32>(MeshData->Position.size());
 
             // 위치 데이터 추가
-            MeshData->Vertices.push_back(FVector(Pos.x, Pos.y, Pos.z));
+            MeshData->Position.push_back(FVector(Pos.x, Pos.y, Pos.z));
             
             // 랜덤 색상 추가
             MeshData->Color.push_back(FVector4(

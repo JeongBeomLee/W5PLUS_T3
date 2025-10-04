@@ -68,7 +68,7 @@ bool ULineDynamicMesh::UpdateData(FMeshData* InData, ID3D11DeviceContext* InCont
     if (!bIsInitialized || !InData || !InContext)
         return false;
 
-    uint32 vertexCount = static_cast<uint32>(InData->Vertices.size());
+    uint32 vertexCount = static_cast<uint32>(InData->Position.size());
     uint32 indexCount = static_cast<uint32>(InData->Indices.size());
 
     if (vertexCount > MaxVertices || indexCount > MaxIndices)
@@ -88,7 +88,7 @@ bool ULineDynamicMesh::UpdateData(FMeshData* InData, ID3D11DeviceContext* InCont
     FVertexSimple* dstVertices = static_cast<FVertexSimple*>(mappedVertex.pData);
     for (uint32 i = 0; i < vertexCount; ++i)
     {
-        dstVertices[i].Position = InData->Vertices[i];
+        dstVertices[i].Position = InData->Position[i];
         dstVertices[i].Color = (i < InData->Color.size()) ? InData->Color[i] : FVector4(1, 1, 1, 1);
     }
     InContext->Unmap(VertexBuffer, 0);

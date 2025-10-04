@@ -274,15 +274,7 @@ void UPrimitiveSpawnWidget::SpawnActors() const
         FTransform SpawnTransform(SpawnLocation, SpawnRotation, SpawnScaleVec);
 
         AStaticMeshActor* NewActor = World->SpawnActor<AStaticMeshActor>(SpawnTransform);
-        // jft
-        UBillboardComponent* NewBillboard = NewObject<UBillboardComponent>();
-        NewActor->AddComponent(NewBillboard);
-        NewBillboard->SetupAttachment(NewActor->GetRootComponent());
-
-        UTextRenderComponent* NewTextRender = NewObject<UTextRenderComponent>();
-        NewActor->AddComponent(NewTextRender);
-        NewTextRender->SetupAttachment(NewActor->GetRootComponent());
-
+        
         if (NewActor)
         {
             // 드롭다운에서 선택한 리소스가 있으면 그걸 사용, 아니면 Cube로 기본 설정
