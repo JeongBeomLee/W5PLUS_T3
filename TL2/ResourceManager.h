@@ -38,8 +38,8 @@ public:
 
     UMaterial* GetOrCreateMaterial(const FString& Name,  EVertexLayoutType layoutType);
 
-    void CreateTextBillboardTexture();
-    void CreateIconBillboardTexture();
+    void CreateTextTexture();
+    void CreateBillboardTexture();
 
     void UpdateDynamicVertexBuffer(const FString& name, TArray<FBillboardVertexInfo_GPU>& vertices);
     FTextureData* CreateOrGetTextureData(const FWideString& FilePath);
@@ -48,7 +48,7 @@ public:
     void Clear();
     
     void CreateAxisMesh(float Length, const FString& FilePath);
-    void CreateTextBillboardMesh();
+    void CreateTextMesh();
     void CreateGridMesh(int N, const FString& FilePath);
     void CreateBoxWireframeMesh(const FVector& Min, const FVector& Max, const FString& FilePath);
     //FMeshData* CreateWireBoxMesh(const FVector& Min, const FVector& Max, const FString& FilePath);

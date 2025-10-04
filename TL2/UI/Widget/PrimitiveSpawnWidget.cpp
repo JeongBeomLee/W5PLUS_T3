@@ -11,9 +11,6 @@
 #include <ctime>
 #include <string>
 #include "ObjectIterator.h"
-// jft
-#include "BillboardComponent.h"
-#include "TextRenderComponent.h"
 
 //// UE_LOG 대체 매크로
 //#define UE_LOG(fmt, ...)

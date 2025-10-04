@@ -5,6 +5,7 @@
 #include "ObjManager.h"
 #include "d3dtk/WICTextureLoader.h"
 #include "TextQuad.h"
+#include <filesystem>
 
 #define GRIDNUM 100
 #define AXISLENGTH 100
@@ -35,11 +36,11 @@ void UResourceManager::Initialize(ID3D11Device* InDevice, ID3D11DeviceContext* I
 
     InitTexToShaderMap();
 
-    CreateTextBillboardMesh();//"TextBillboard"
+    CreateTextMesh();//"TextBillboard"
 
-    CreateTextBillboardTexture();
+    CreateTextTexture();
 
-    CreateIconBillboardTexture();
+    CreateBillboardTexture();
 
     CreateDefaultShader();
     
@@ -196,7 +197,7 @@ void UResourceManager::CreateAxisMesh(float Length, const FString& FilePath)
     UMeshLoader::GetInstance().AddMeshData("Axis", MeshData);
 }
 
-void UResourceManager::CreateTextBillboardMesh()
+void UResourceManager::CreateTextMesh()
 {
     TArray<uint32> Indices;
     for (uint32 i = 0;i < 100;i++)
@@ -438,37 +439,39 @@ FString& UResourceManager::GetProperShader(const FString& InTextureName)
 void UResourceManager::InitTexToShaderMap()
 {
     TextureToShaderMap["TextBillboard.dds"] = "TextBillboard.hlsl";
-    // jft : change hard coded path
-    TextureToShaderMap["Editor/Icon/Pawn_64x.dds"] = "Billboard.hlsl";
-    TextureToShaderMap["Editor/Icon/PointLight_64x.dds"] = "Billboard.hlsl";
-    TextureToShaderMap["Editor/Icon/SpotLight_64x.dds"] = "Billboard.hlsl";
 }
 
 
-void UResourceManager::CreateTextBillboardTexture()
+void UResourceManager::CreateTextTexture()
 {
     UTexture* TextBillboardTexture = NewObject<UTexture>();
     TextBillboardTexture->Load("TextBillboard.dds",Device);
     Add<UTexture>("TextBillboard.dds", TextBillboardTexture);
 }
 
-void UResourceManager::CreateIconBillboardTexture()
+void UResourceManager::CreateBillboardTexture()
 {
-     // jft : change hard coded path
-    // jft : 이딴 식으로 만들지 말기
-    UTexture* IconBillboardTexture = NewObject<UTexture>();
-    IconBillboardTexture->Load("Editor/Icon/Pawn_64x.dds", Device);
-    Add<UTexture>("Editor/Icon/Pawn_64x.dds", IconBillboardTexture);
-
-    UTexture* IconBillboardTexture2 = NewObject<UTexture>();
-    IconBillboardTexture2->Load("Editor/Icon/PointLight_64x.dds", Device);
-    Add<UTexture>("Editor/Icon/PointLight_64x.dds", IconBillboardTexture2);
-
-    UTexture* IconBillboardTexture3 = NewObject<UTexture>();
-    IconBillboardTexture3->Load("Editor/Icon/SpotLight_64x.dds", Device);
-    Add<UTexture>("Editor/Icon/SpotLight_64x.dds", IconBillboardTexture3);
+    const FString DirectoryPath = "Editor/Icon/";
+    
+    if (!std::filesystem::exists(DirectoryPath))
+    {
+        UE_LOG("Icon directory not found: %s", DirectoryPath.c_str());
+        return;
+    }
+    
+    for (const auto& Entry : std::filesystem::directory_iterator(DirectoryPath))
+    {
+        if (Entry.is_regular_file() && Entry.path().extension() == ".dds")
+        {
+            std::string FilePath = Entry.path().generic_string();
+            FString ResourcePath(FilePath.c_str());
+            
+            UTexture* iconTexture = NewObject<UTexture>();
+            iconTexture->Load(ResourcePath, Device);
+            Add<UTexture>(ResourcePath, iconTexture);
+        }
+    }
 }
-
 
 void UResourceManager::UpdateDynamicVertexBuffer(const FString& Name, TArray<FBillboardVertexInfo_GPU>& vertices)
 {
