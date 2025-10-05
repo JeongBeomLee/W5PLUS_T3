@@ -1,5 +1,15 @@
 ﻿#include "pch.h"
 #include "Vector.h"
+
+const FVector FVector::Forward = FVector(1, 0, 0);
+const FVector FVector::Right = FVector(0, 1, 0);
+const FVector FVector::Up = FVector(0, 0, 1);
+const FVector FVector::UnitX = FVector(1, 0, 0);
+const FVector FVector::UnitY = FVector(0, 1, 0);
+const FVector FVector::UnitZ = FVector(0, 0, 1);
+const FVector FVector::One = FVector(1, 1, 1);
+const FVector FVector::Zero = FVector(0, 0, 0);
+
 const FMatrix FMatrix::ViewAxis = FMatrix
 (
 	0, 0, 1, 0,
@@ -124,6 +134,23 @@ FVector FQuat::GetRight() const
 FVector FQuat::GetUp() const
 {
 	return	FVector(2 * (X * Z + Y * W), 2 * (Y * Z - X * W), 1 - 2 * (X * X + Y * Y));
+}
+FVector FQuat::GetAxis() const
+{
+	float radian = acosf(W) * 2;
+	if (radian < KINDA_SMALL_NUMBER)
+	{
+		return FVector::One;
+	}
+	return FVector(X, Y, Z) / sin(radian * 0.5f);
+}
+float FQuat::GetAngle() const
+{
+	return acosf(W) * 2 * ToDegree;
+}
+FQuat FQuat::GetConjugate() const
+{
+	return	FQuat(FVector(-X, -Y, -Z), W);
 }
 void FQuat::Normalize()
 {

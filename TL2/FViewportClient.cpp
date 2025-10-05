@@ -241,8 +241,9 @@ void FViewportClient::MouseButtonDown(FViewport* Viewport, int32 X, int32 Y, int
 			PickedActor = PickedComponent->GetOwner();
 			PickedActor->SetIsPicked(true);
 
-			//선택된 액터와 같으면 컴포넌트 선택으로 취급
-			if (PickedActor == USelectionManager::GetInstance().GetSelectedActor())
+			//선택된 액터와 같으면 컴포넌트 선택으로 취급 (오히려 불편하다)
+			//if (PickedActor == USelectionManager::GetInstance().GetSelectedActor())
+			if (false)
 			{		
 				USelectionManager::GetInstance().SelectComponent(PickedComponent);
 				if (World->GetGizmoActor())

@@ -14,37 +14,37 @@ void FFrustum::Update(const FMatrix& InViewProjectionMatrix)
 	Planes[0].Normal.X = M.M[0][3] + M.M[0][0];
 	Planes[0].Normal.Y = M.M[1][3] + M.M[1][0];
 	Planes[0].Normal.Z = M.M[2][3] + M.M[2][0];
-	Planes[0].Distance = M.M[3][3] + M.M[3][0];
+	Planes[0].D = M.M[3][3] + M.M[3][0];
 
 	// Right Plane (column 3 - column 0)
 	Planes[1].Normal.X = M.M[0][3] - M.M[0][0];
 	Planes[1].Normal.Y = M.M[1][3] - M.M[1][0];
 	Planes[1].Normal.Z = M.M[2][3] - M.M[2][0];
-	Planes[1].Distance = M.M[3][3] - M.M[3][0];
+	Planes[1].D = M.M[3][3] - M.M[3][0];
 
 	// Bottom Plane (column 3 + column 1)
 	Planes[2].Normal.X = M.M[0][3] + M.M[0][1];
 	Planes[2].Normal.Y = M.M[1][3] + M.M[1][1];
 	Planes[2].Normal.Z = M.M[2][3] + M.M[2][1];
-	Planes[2].Distance = M.M[3][3] + M.M[3][1];
+	Planes[2].D = M.M[3][3] + M.M[3][1];
 
 	// Top Plane (column 3 - column 1)
 	Planes[3].Normal.X = M.M[0][3] - M.M[0][1];
 	Planes[3].Normal.Y = M.M[1][3] - M.M[1][1];
 	Planes[3].Normal.Z = M.M[2][3] - M.M[2][1];
-	Planes[3].Distance = M.M[3][3] - M.M[3][1];
+	Planes[3].D = M.M[3][3] - M.M[3][1];
 
 	// Near Plane (column 2) - DirectX z=0..1
 	Planes[4].Normal.X = M.M[0][2];
 	Planes[4].Normal.Y = M.M[1][2];
 	Planes[4].Normal.Z = M.M[2][2];
-	Planes[4].Distance = M.M[3][2];
+	Planes[4].D = M.M[3][2];
 
 	// Far Plane (column 3 - column 2)
 	Planes[5].Normal.X = M.M[0][3] - M.M[0][2];
 	Planes[5].Normal.Y = M.M[1][3] - M.M[1][2];
 	Planes[5].Normal.Z = M.M[2][3] - M.M[2][2];
-	Planes[5].Distance = M.M[3][3] - M.M[3][2];
+	Planes[5].D = M.M[3][3] - M.M[3][2];
 
 
 	// 6개 평면을 모두 정규화(Normalize)합니다. (이 부분은 동일)
@@ -61,7 +61,7 @@ void FFrustum::Update(const FMatrix& InViewProjectionMatrix)
 			Planes[i].Normal.X /= NormalLength;
 			Planes[i].Normal.Y /= NormalLength;
 			Planes[i].Normal.Z /= NormalLength;
-			Planes[i].Distance /= NormalLength;
+			Planes[i].D /= NormalLength;
 		}
 	}
 }
@@ -88,7 +88,7 @@ bool FFrustum::IsVisible(FBound& InBox) const
 		PositiveVtx.Z = (CurrentPlane.Normal.Z >= 0.0f) ? InBox.Max.Z : InBox.Min.Z;
 
 		// 이 '가장 안쪽에 있을 법한' 꼭짓점과 평면 사이의 부호 있는 거리를 계산합니다.
-		const float SignedDistance = FVector::Dot(CurrentPlane.Normal, PositiveVtx) + CurrentPlane.Distance;
+		const float SignedDistance = FVector::Dot(CurrentPlane.Normal, PositiveVtx) + CurrentPlane.D;
 
 		// 만약 이 꼭짓점마저 평면의 바깥쪽(음수 공간)에 있다면,
 		// AABB 전체가 이 평면의 바깥에 존재하므로 절두체 밖에 있는 것이 확정됩니다.

@@ -271,10 +271,14 @@ struct FVector
         return V * (Value / Length);
     }
 
-    static FVector One()
-    {
-        return FVector(1.f, 1.f, 1.f);
-    }
+    const static FVector Forward;
+    const static FVector Right;
+    const static FVector Up;
+    const static FVector UnitX;
+    const static FVector UnitY;
+    const static FVector UnitZ;
+    const static FVector One;
+    const static FVector Zero;
 
     void Log()
     {
@@ -322,7 +326,7 @@ struct FVector4
 };
 
 // ─────────────────────────────
-// FQuat (Quaternion)
+// FQuat (Quaternion)  회전순서 오른쪽부터 왼쪽으로
 // ─────────────────────────────
 struct FQuat
 {
@@ -333,7 +337,7 @@ public:
     static FQuat Identity;
 public:
 
-    FQuat() :X(0), Y(0), Z(0), W(0) {}
+    FQuat() :X(0), Y(0), Z(0), W(1) {}
     FQuat(float x, float y, float z, float w) :X(x), Y(y), Z(z), W(w) {}
     FQuat(const FVector& normal, const float degree);
     FVector RotateVector(const FVector& v)const;
@@ -342,11 +346,21 @@ public:
     FVector GetForward() const;
     FVector GetUp() const;
     FVector GetRight() const;
+    FVector GetAxis() const;
+    float GetAngle() const;
+    FQuat GetConjugate() const;
 
     void Normalize();
     const FMatrix ToMatrix() const;
     static FQuat MakeFromEuler(const FVector& eulerDegree);
     FQuat operator* (const FQuat& rhs) const;
+
+    void Log() const
+    {
+        char debugMsg[64];
+        sprintf_s(debugMsg, "Quat(%f, %f, %f, %f)", X, Y, Z, W);
+        UE_LOG(debugMsg);
+    }
 
 };
 
@@ -792,3 +806,38 @@ inline FMatrix FTransform::GetWorldMatrix() const
 {
     return FMatrix::FromTRS(Translation, Rotation, Scale3D);
 }
+
+
+
+struct FPlane
+{
+    FVector Normal;
+    float D;
+    FPlane() = default;
+    FPlane(const FVector& InNormal, const FVector& Pos)
+    {
+        Normal = InNormal.GetNormalized();
+        D = -Normal.Dot(Pos);
+    }
+
+    FVector IntersectRay(const FVector& RayDir, const FVector& RayOrigin)
+    {
+        //HitPos = P, PlaneNormal = N, PlaneD = D, 
+        //RayDir = V, RayOrigin = O
+        //N * P + D = 0
+        //P = t * V + O
+        //t를 구하면 됨
+        //t(N * V) + N * O + D = 0
+        //t = -(N * O + D) / (N * V)
+        //평면의 노말과 레이의 방향이 90도면 구할 수 없음
+        float NdotV = Normal.Dot(RayDir);
+        if (abs(NdotV) < KINDA_SMALL_NUMBER)
+        {
+            return FVector::Zero;
+        }
+        float NdotO = Normal.Dot(RayOrigin);
+        float T = -(NdotO + D) / NdotV;
+        FVector HitPos = RayOrigin + RayDir * T;
+        return HitPos;
+    }
+};

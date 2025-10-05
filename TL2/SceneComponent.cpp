@@ -7,7 +7,9 @@
 USceneComponent::USceneComponent()
     : AttachParent(nullptr)
 {
-
+    RelativeTransform.Translation = FVector(0, 0, 0);
+    RelativeTransform.Rotation = FQuat(0, 0, 0, 1);
+    RelativeTransform.Scale3D = FVector(1, 1, 1);
 }
 
 USceneComponent::~USceneComponent()
@@ -84,9 +86,34 @@ FQuat USceneComponent::GetWorldRotation()
 {
     if (AttachParent != nullptr)
     {
-        return RelativeTransform.Rotation * AttachParent->GetWorldRotation();
+        return AttachParent->GetWorldRotation() * RelativeTransform.Rotation;
     }
     return RelativeTransform.Rotation;
+}
+FQuat USceneComponent::GetParentWorldRotation()
+{
+    if (AttachParent != nullptr)
+    {
+        return AttachParent->GetWorldRotation();
+    }
+    return FQuat::Identity;
+}
+void USceneComponent::AddWorldRotation(const FQuat& InQuat) 
+{ 
+    FQuat WorldQuat = InQuat;
+    if (AttachParent != nullptr)
+    {
+        //자식의 RelativeRotation에 곱하면 부모스페이스 기준으로 회전 하기때문에
+        //InQuat의 회전 축을 부모의 회전행렬의 역행렬을 이용해 월드회전축으로 변경 해줘야함
+        FMatrix ParentRotationMat = AttachParent->GetWorldRotation().ToMatrix();
+        FMatrix ParentRotationMatInverse = ParentRotationMat.Transpose();
+        FVector WorldAxis = WorldQuat.GetAxis();
+        float Degree = WorldQuat.GetAngle();
+        WorldAxis = WorldAxis * ParentRotationMatInverse;
+        WorldAxis.Normalize();
+        WorldQuat = FQuat(WorldAxis, Degree);
+    } 
+    SetRelativeRotation(WorldQuat * RelativeTransform.Rotation);
 }
 
 void USceneComponent::SetRelativeTransform(const FTransform& InRelativeTransform)
@@ -117,6 +144,30 @@ FVector USceneComponent::GetRight()
 FVector USceneComponent::GetUp()
 {
     return GetWorldRotation().GetUp();
+}   
+FVector USceneComponent::GetParentForward()
+{
+    if (AttachParent!= nullptr)
+    {
+        return AttachParent->GetForward();
+    }
+    return FVector(1, 0, 0);
+}
+FVector USceneComponent::GetParentRight()
+{
+    if (AttachParent != nullptr)
+    {
+        return AttachParent->GetRight();
+    }
+    return FVector(0, 1, 0);
+}
+FVector USceneComponent::GetParentUp()
+{
+    if (AttachParent != nullptr)
+    {
+        return AttachParent->GetUp();
+    }
+    return FVector(0, 0, 1);
 }
 const FMatrix& USceneComponent::GetWorldMatrix()
 {
@@ -210,28 +261,15 @@ void USceneComponent::RenderDetail()
             SetRelativeLocation(RelativeTransform.Translation);
         }
 
-        FQuat CurRotate = RelativeTransform.Rotation;
-        FVector PrevEuler = RelativeTransform.Rotation.ToEulerDegree();
-        FVector CurrentEuler = RelativeTransform.Rotation.ToEulerDegree();
-        if (ImGui::DragFloat3("Rotation", &CurrentEuler.X, 0.5f))
+        if (ImGui::DragFloat3("Rotation", &EulerRotation.X, 0.5f))
         {
-            // 증가분 계산
-            FVector DeltaEuler = CurrentEuler - PrevEuler;
-            if (DeltaEuler.X != 0)
-            {
-                CurRotate = FQuat(GetForward(), DeltaEuler.X) * CurRotate;
-            }
-            if (DeltaEuler.Y != 0)
-            {
-                CurRotate = FQuat(GetRight(), DeltaEuler.Y) * CurRotate;
-            }
-            if (DeltaEuler.Z != 0)
-            {
-                CurRotate = FQuat(GetUp(), DeltaEuler.Z)*CurRotate;
-            }
-            // 기존 쿼터니언에 증가분 회전 적용
-            SetRelativeRotation(CurRotate);
+            SetRelativeRotation(FQuat::MakeFromEuler(EulerRotation));
         }
+        FVector Forward = GetForward();
+        FVector PForward = GetParentForward();
+        FVector PRight = GetParentRight();
+        FVector pUp = GetParentUp();
+        //Forward.Log();
 
         // Scale 편집
         ImGui::Checkbox("Uniform Scale", &bUniformScale);
