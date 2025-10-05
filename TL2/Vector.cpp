@@ -135,6 +135,23 @@ FVector FQuat::GetUp() const
 {
 	return	FVector(2 * (X * Z + Y * W), 2 * (Y * Z - X * W), 1 - 2 * (X * X + Y * Y));
 }
+FVector FQuat::GetAxis() const
+{
+	float radian = acosf(W) * 2;
+	if (radian < KINDA_SMALL_NUMBER)
+	{
+		return FVector::One;
+	}
+	return FVector(X, Y, Z) / sin(radian * 0.5f);
+}
+float FQuat::GetAngle() const
+{
+	return acosf(W) * 2 * ToDegree;
+}
+FQuat FQuat::GetConjugate() const
+{
+	return	FQuat(FVector(-X, -Y, -Z), W);
+}
 void FQuat::Normalize()
 {
 	float len = sqrtf(X * X + Y * Y + Z * Z + W * W);

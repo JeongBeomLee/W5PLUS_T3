@@ -2,13 +2,6 @@
 
 class FBound;
 
-// 절두체를 구성하는 6개의 평면
-struct FPlane
-{
-	FVector Normal;
-	float   Distance;
-};
-
 class FFrustum
 {
 public:

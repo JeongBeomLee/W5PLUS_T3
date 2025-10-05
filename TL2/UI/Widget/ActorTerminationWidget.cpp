@@ -76,7 +76,6 @@ void UActorTerminationWidget::AddComponentAtSelectedActor(UActorComponent* NewCo
 			}
 			else
 			{
-				//해당 로직을 둘 곳을 몰라서 일단 여기둠
 				SelectedActor->AddComponent(SceneComponent);
 			}
 		}

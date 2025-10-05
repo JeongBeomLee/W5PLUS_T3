@@ -126,7 +126,7 @@ static void DebugRTTI_UObject(UObject* Obj, const char* Title)
 
 void UWorld::Initialize()
 {
-	//FObjManager::Preload();
+	FObjManager::Preload();
 
 	// 새 씬 생성
 	CreateNewScene();

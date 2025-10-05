@@ -86,9 +86,34 @@ FQuat USceneComponent::GetWorldRotation()
 {
     if (AttachParent != nullptr)
     {
-        return RelativeTransform.Rotation * AttachParent->GetWorldRotation();
+        return AttachParent->GetWorldRotation() * RelativeTransform.Rotation;
     }
     return RelativeTransform.Rotation;
+}
+FQuat USceneComponent::GetParentWorldRotation()
+{
+    if (AttachParent != nullptr)
+    {
+        return AttachParent->GetWorldRotation();
+    }
+    return FQuat::Identity;
+}
+void USceneComponent::AddWorldRotation(const FQuat& InQuat) 
+{ 
+    FQuat WorldQuat = InQuat;
+    if (AttachParent != nullptr)
+    {
+        //자식의 RelativeRotation에 곱하면 부모스페이스 기준으로 회전 하기때문에
+        //InQuat의 회전 축을 부모의 회전행렬의 역행렬을 이용해 월드회전축으로 변경 해줘야함
+        FMatrix ParentRotationMat = AttachParent->GetWorldRotation().ToMatrix();
+        FMatrix ParentRotationMatInverse = ParentRotationMat.Transpose();
+        FVector WorldAxis = WorldQuat.GetAxis();
+        float Degree = WorldQuat.GetAngle();
+        WorldAxis = WorldAxis * ParentRotationMatInverse;
+        WorldAxis.Normalize();
+        WorldQuat = FQuat(WorldAxis, Degree);
+    } 
+    SetRelativeRotation(WorldQuat * RelativeTransform.Rotation);
 }
 
 void USceneComponent::SetRelativeTransform(const FTransform& InRelativeTransform)
@@ -244,7 +269,7 @@ void USceneComponent::RenderDetail()
         FVector PForward = GetParentForward();
         FVector PRight = GetParentRight();
         FVector pUp = GetParentUp();
-        Forward.Log();
+        //Forward.Log();
 
         // Scale 편집
         ImGui::Checkbox("Uniform Scale", &bUniformScale);
